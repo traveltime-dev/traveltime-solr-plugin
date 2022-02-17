@@ -1,0 +1,37 @@
+buildscript {
+    repositories {
+        gradlePluginPortal()
+
+    }
+
+    dependencies {
+        classpath 'io.freefair.gradle:lombok-plugin:5.3.0'
+        classpath 'com.github.johnrengelman.shadow:com.github.johnrengelman.shadow.gradle.plugin:7.1.2'
+    }
+}
+
+group = 'com.traveltime'
+version = project.findProperty('tag') ?: 'v0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://maven.restlet.org/"
+    }
+}
+
+apply plugin: 'io.freefair.lombok'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'java'
+
+compileJava {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+dependencies {
+    compileOnly "org.apache.solr:solr-core:7.7.3"
+    implementation 'com.traveltime:traveltime-sdk-java:1.1.11'
+    implementation 'io.vavr:vavr:0.10.4'
+    implementation group: 'it.unimi.dsi', name: 'fastutil', version: '8.5.6'
+}
