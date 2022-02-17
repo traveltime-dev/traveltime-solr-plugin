@@ -2,13 +2,15 @@ package com.traveltime.plugin.solr.query;
 
 
 import com.traveltime.plugin.solr.ProtoFetcher;
+import com.traveltime.plugin.solr.cache.RequestCache;
+import com.traveltime.plugin.solr.cache.TravelTimes;
+import com.traveltime.plugin.solr.cache.UnprotectedTimes;
 import com.traveltime.plugin.solr.util.Util;
 import com.traveltime.sdk.dto.common.Coordinates;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.val;
 import org.apache.lucene.index.DocValues;
 import org.apache.lucene.index.LeafReaderContext;
@@ -35,12 +37,13 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
    private final float scoreWeight;
    private final Int2ObjectOpenHashMap<Coordinates> globalDoc2Coords;
    private final ProtoFetcher fetcher;
+   private final RequestCache cache;
 
    private Object2IntOpenHashMap<Coordinates> pointToTime;
    private SortedNumericDocValues coords;
 
 
-   public TraveltimeDelegatingCollector(int maxDoc, int segments, TraveltimeQueryParameters params, float scoreWeight, ProtoFetcher fetcher) {
+   public TraveltimeDelegatingCollector(int maxDoc, int segments, TraveltimeQueryParameters params, float scoreWeight, ProtoFetcher fetcher, RequestCache cache) {
       this.maxDoc = maxDoc;
       this.contexts = new LeafReaderContext[segments];
       this.contextBaseStart = new int[segments];
@@ -51,6 +54,7 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
       this.params = params;
       this.scoreWeight = scoreWeight;
       this.fetcher = fetcher;
+      this.cache = cache;
    }
 
    @Override
@@ -81,7 +85,16 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
    }
 
    private Object2IntOpenHashMap<Coordinates> computePointToTime(ObjectCollection<Coordinates> coords) {
-      ArrayList<Coordinates> destinations = new ArrayList<>(new ObjectOpenHashSet<>(coords));
+      TravelTimes cachedResults;
+      if(cache != null) {
+         cachedResults = cache.getOrFresh(params);
+      } else {
+         cachedResults = new UnprotectedTimes();
+      }
+
+      val nonCachedSet = cachedResults.nonCached(params, coords);
+
+      ArrayList<Coordinates> destinations = new ArrayList<>(nonCachedSet);
 
       List<Integer> times = fetcher.getTimes(
           params.getOrigin(),
@@ -91,14 +104,9 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
           params.getCountry()
       );
 
-      val pointToTime = new Object2IntOpenHashMap<Coordinates>(times.size());
+      cachedResults.putAll(destinations, times);
 
-      for (int index = 0; index < times.size(); index++) {
-         if (times.get(index) > 0) {
-            pointToTime.put(destinations.get(index), times.get(index).intValue());
-         }
-      }
-      return pointToTime;
+      return cachedResults.mapToTimes(coords);
    }
 
    @Override

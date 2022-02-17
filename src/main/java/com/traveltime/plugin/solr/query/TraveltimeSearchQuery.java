@@ -1,6 +1,7 @@
 package com.traveltime.plugin.solr.query;
 
 import com.traveltime.plugin.solr.ProtoFetcher;
+import com.traveltime.plugin.solr.cache.RequestCache;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.lucene.search.IndexSearcher;
@@ -24,9 +25,10 @@ public class TraveltimeSearchQuery extends ExtendedQueryBase implements PostFilt
    @Override
    public DelegatingCollector getFilterCollector(IndexSearcher indexSearcher) {
       SolrIndexSearcher searcher = (SolrIndexSearcher)indexSearcher;
+      RequestCache cache = (RequestCache) searcher.getCache(RequestCache.NAME);
       int maxDoc = searcher.maxDoc();
       int leafCount = searcher.getTopReaderContext().leaves().size();
-      return new TraveltimeDelegatingCollector(maxDoc, leafCount, params, weight, fetcher);
+      return new TraveltimeDelegatingCollector(maxDoc, leafCount, params, weight, fetcher, cache);
    }
 
    @Override
