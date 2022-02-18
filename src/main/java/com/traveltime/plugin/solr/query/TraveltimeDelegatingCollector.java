@@ -86,7 +86,7 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
 
    private Object2IntOpenHashMap<Coordinates> computePointToTime(ObjectCollection<Coordinates> coords) {
       TravelTimes cachedResults;
-      if(cache != null) {
+      if (cache != null) {
          cachedResults = cache.getOrFresh(params);
       } else {
          cachedResults = new UnprotectedTimes();
@@ -96,17 +96,22 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
 
       ArrayList<Coordinates> destinations = new ArrayList<>(nonCachedSet);
 
-      List<Integer> times = fetcher.getTimes(
-          params.getOrigin(),
-          destinations,
-          params.getLimit(),
-          params.getMode(),
-          params.getCountry()
-      );
+      List<Integer> times;
+      if (destinations.size() == 0) {
+         times = new ArrayList<>();
+      } else {
+         times = fetcher.getTimes(
+             params.getOrigin(),
+             destinations,
+             params.getLimit(),
+             params.getMode(),
+             params.getCountry()
+         );
+      }
 
       cachedResults.putAll(params.getLimit(), destinations, times);
 
-      return cachedResults.mapToTimes(coords);
+      return cachedResults.mapToTimes(params.getLimit(), coords);
    }
 
    @Override

@@ -11,6 +11,6 @@ import java.util.Set;
 public abstract class TravelTimes {
    public abstract Set<Coordinates> nonCached(int limit, ObjectCollection<Coordinates> coords);
    public abstract void putAll(int limit, ArrayList<Coordinates> coords, List<Integer> times);
-   public abstract Object2IntOpenHashMap<Coordinates> mapToTimes(ObjectCollection<Coordinates> coords);
+   public abstract Object2IntOpenHashMap<Coordinates> mapToTimes(int limit, ObjectCollection<Coordinates> coords);
    public abstract int get(Coordinates coord);
 }

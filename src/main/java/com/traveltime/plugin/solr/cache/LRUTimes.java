@@ -6,20 +6,25 @@ import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import lombok.val;
 import org.apache.solr.search.FastLRUCache;
+import org.apache.solr.util.SolrPluginUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class LRUTimes extends TravelTimes {
    private final FastLRUCache<Coordinates, Integer> coordsToTimes = new FastLRUCache<>();
+
+   public LRUTimes() {
+      Map<String, String> args = new HashMap<>();
+      args.put("name", "fuzzy_cache");
+      coordsToTimes.init(args, null, new SolrPluginUtils.IdentityRegenerator());
+   }
 
    @Override
    public Set<Coordinates> nonCached(int limit, ObjectCollection<Coordinates> coords) {
       val nonCachedSet = new ObjectOpenHashSet<Coordinates>();
       coords.forEach(coord -> {
              Integer time = coordsToTimes.get(coord);
-             if (time > -limit) {
+             if (time == null || (time < 0 && time > -limit)) {
                 nonCachedSet.add(coord);
              }
           }
@@ -42,11 +47,11 @@ public class LRUTimes extends TravelTimes {
    }
 
    @Override
-   public Object2IntOpenHashMap<Coordinates> mapToTimes(ObjectCollection<Coordinates> coords) {
+   public Object2IntOpenHashMap<Coordinates> mapToTimes(int limit, ObjectCollection<Coordinates> coords) {
       val pointToTime = new Object2IntOpenHashMap<Coordinates>(coords.size());
       coords.forEach(coord -> {
          Integer time = coordsToTimes.get(coord);
-         if (time != null && time > 0) {
+         if (time != null && time > 0 && time <= limit) {
             pointToTime.put(coord, time.intValue());
          }
       });

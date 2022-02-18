@@ -66,7 +66,7 @@ public class TraveltimeQueryParameters {
          throw new SyntaxError("traveltime limit must be > 0");
       }
 
-      return null;
+      return new TraveltimeQueryParameters(field, origin, limit, mode, country);
    }
 
 }

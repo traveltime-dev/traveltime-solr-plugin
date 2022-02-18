@@ -15,6 +15,7 @@ public class BasicTravelTimes extends TravelTimes {
    private final StampedLock rwLock = new StampedLock();
    private final Object2IntOpenHashMap<Coordinates> coordsToTimes = new Object2IntOpenHashMap<>();
 
+   @Override
    public Set<Coordinates> nonCached(int ignored, ObjectCollection<Coordinates> coords) {
       long read = rwLock.readLock();
       try {
@@ -31,6 +32,7 @@ public class BasicTravelTimes extends TravelTimes {
       }
    }
 
+   @Override
    public void putAll(int ignored, ArrayList<Coordinates> coords, List<Integer> times) {
       long write = rwLock.writeLock();
       try {
@@ -42,7 +44,8 @@ public class BasicTravelTimes extends TravelTimes {
       }
    }
 
-   public Object2IntOpenHashMap<Coordinates> mapToTimes(ObjectCollection<Coordinates> coords) {
+   @Override
+   public Object2IntOpenHashMap<Coordinates> mapToTimes(int ignored, ObjectCollection<Coordinates> coords) {
       long read = rwLock.readLock();
       try {
          val pointToTime = new Object2IntOpenHashMap<Coordinates>(coords.size());

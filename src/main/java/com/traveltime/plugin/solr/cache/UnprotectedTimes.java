@@ -25,7 +25,7 @@ public class UnprotectedTimes extends TravelTimes {
       }
    }
 
-   public Object2IntOpenHashMap<Coordinates> mapToTimes(ObjectCollection<Coordinates> coords) {
+   public Object2IntOpenHashMap<Coordinates> mapToTimes(int ignored, ObjectCollection<Coordinates> coords) {
       return coordsToTimes;
    }
 

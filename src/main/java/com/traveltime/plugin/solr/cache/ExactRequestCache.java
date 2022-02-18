@@ -12,7 +12,8 @@ public class ExactRequestCache extends RequestCache {
          synchronized (lock) {
             result = get(key);
             if (result == null) {
-               result = put(key, new BasicTravelTimes());
+               result = new BasicTravelTimes();
+               put(key, result);
             }
          }
       }
