@@ -1,6 +1,5 @@
 package com.traveltime.plugin.solr.cache;
 
-import com.traveltime.plugin.solr.query.TraveltimeQueryParameters;
 import com.traveltime.sdk.dto.common.Coordinates;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
@@ -16,7 +15,7 @@ public class BasicTravelTimes extends TravelTimes {
    private final StampedLock rwLock = new StampedLock();
    private final Object2IntOpenHashMap<Coordinates> coordsToTimes = new Object2IntOpenHashMap<>();
 
-   public Set<Coordinates> nonCached(TraveltimeQueryParameters params, ObjectCollection<Coordinates> coords) {
+   public Set<Coordinates> nonCached(int ignored, ObjectCollection<Coordinates> coords) {
       long read = rwLock.readLock();
       try {
          val nonCachedSet = new ObjectOpenHashSet<Coordinates>();
@@ -32,7 +31,7 @@ public class BasicTravelTimes extends TravelTimes {
       }
    }
 
-   public void putAll(ArrayList<Coordinates> coords, List<Integer> times) {
+   public void putAll(int ignored, ArrayList<Coordinates> coords, List<Integer> times) {
       long write = rwLock.writeLock();
       try {
          for (int index = 0; index < times.size(); index++) {

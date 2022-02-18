@@ -9,22 +9,8 @@ import java.util.Map;
 
 public abstract class RequestCache extends FastLRUCache<TraveltimeQueryParameters, TravelTimes> {
    public static String NAME = "traveltime";
-   private final Object[] lock = new Object[0];
 
-   public abstract TravelTimes fresh();
-
-   public TravelTimes getOrFresh(TraveltimeQueryParameters key) {
-      TravelTimes result = get(key);
-      if(result == null) {
-         synchronized (lock) {
-            result = get(key);
-            if(result == null) {
-               result = put(key, fresh());
-            }
-         }
-      }
-      return result;
-   }
+   public abstract TravelTimes getOrFresh(TraveltimeQueryParameters key);
 
    @Override
    public void init(Map<String, String> args, CacheRegenerator ignored) {

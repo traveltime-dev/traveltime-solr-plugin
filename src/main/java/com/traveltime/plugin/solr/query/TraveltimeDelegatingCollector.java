@@ -92,7 +92,7 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
          cachedResults = new UnprotectedTimes();
       }
 
-      val nonCachedSet = cachedResults.nonCached(params, coords);
+      val nonCachedSet = cachedResults.nonCached(params.getLimit(), coords);
 
       ArrayList<Coordinates> destinations = new ArrayList<>(nonCachedSet);
 
@@ -104,7 +104,7 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
           params.getCountry()
       );
 
-      cachedResults.putAll(destinations, times);
+      cachedResults.putAll(params.getLimit(), destinations, times);
 
       return cachedResults.mapToTimes(coords);
    }
