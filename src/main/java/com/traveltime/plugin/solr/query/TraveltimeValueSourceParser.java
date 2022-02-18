@@ -45,6 +45,6 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
           getParam(params, TraveltimeQueryParameters.COUNTRY)
       );
 
-      return new TraveltimeValueSource(queryParameters, cache.get(queryParameters));
+      return new TraveltimeValueSource(queryParameters, cache.getOrFresh(queryParameters));
    }
 }
