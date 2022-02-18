@@ -8,6 +8,7 @@ import org.apache.solr.search.QParser;
 import org.apache.solr.search.QParserPlugin;
 
 public class TraveltimeQParserPlugin extends QParserPlugin {
+   public static String PARAM_PREFIX = "traveltime_";
 
    @Override
    public void init(NamedList args) {
