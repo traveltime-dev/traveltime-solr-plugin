@@ -5,6 +5,7 @@ import lombok.val;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.util.NamedList;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
@@ -13,6 +14,15 @@ import org.apache.solr.search.ValueSourceParser;
 import static com.traveltime.plugin.solr.TraveltimeQParserPlugin.PARAM_PREFIX;
 
 public class TraveltimeValueSourceParser extends ValueSourceParser {
+   private String cacheName = RequestCache.NAME;
+
+   @Override
+   public void init(NamedList args) {
+      super.init(args);
+      Object cache = args.get("cache");
+      if(cache != null) cacheName = cache.toString();
+   }
+
    private String getParam(SolrParams params, String name) throws SyntaxError {
       String param = params.get(PARAM_PREFIX + name);
       if(param != null) return param;
@@ -25,7 +35,7 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
    @Override
    public ValueSource parse(FunctionQParser fp) throws SyntaxError {
       SolrQueryRequest req = fp.getReq();
-      RequestCache cache = (RequestCache) req.getSearcher().getCache(RequestCache.NAME);
+      RequestCache cache = (RequestCache) req.getSearcher().getCache(cacheName);
       if (cache == null) {
          throw new SolrException(
              SolrException.ErrorCode.BAD_REQUEST,

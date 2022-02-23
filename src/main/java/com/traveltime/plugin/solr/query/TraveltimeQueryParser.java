@@ -13,10 +13,12 @@ public class TraveltimeQueryParser extends QParser {
    private static final String WEIGHT = "weight";
 
    private final ProtoFetcher fetcher;
+   private final String cacheName;
 
-   public TraveltimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, ProtoFetcher fetcher) {
+   public TraveltimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, ProtoFetcher fetcher, String cacheName) {
       super(qstr, localParams, params, req);
       this.fetcher = fetcher;
+      this.cacheName = cacheName;
    }
 
    private String getBestParam(String name) throws SyntaxError {
@@ -56,7 +58,7 @@ public class TraveltimeQueryParser extends QParser {
           getBestParam(TraveltimeQueryParameters.MODE),
           getBestParam(TraveltimeQueryParameters.COUNTRY)
       );
-      return new TraveltimeSearchQuery(params, weight, fetcher);
+      return new TraveltimeSearchQuery(params, weight, fetcher, cacheName);
    }
 
 }
