@@ -20,7 +20,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build the plugin
-        run: ./gradlew shadowJar
+        uses: gradle/gradle-build-action@4137be6a8bf7d7133955359dbd952c0ca73b1021
+        with:
+          arguments: shadowJar
 
       - name: Set up the test solr instance
         run: |
