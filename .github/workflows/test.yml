@@ -1,0 +1,30 @@
+
+name: CI
+
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up the test solr instance
+        run: |
+          DOCKER_BUILDKIT=1 docker build . -f src/test/resources/Dockerfile -t solr-test
+          docker run --rm -p 8983:8983 -it --name solr solr-test solr-fg -a "-Xss4M"
+          ./src/test/resources/setup.sh
+      
+      - name: Run tests on solr instance
+        run: ./src/test/resources/run_tests.sh
+      
