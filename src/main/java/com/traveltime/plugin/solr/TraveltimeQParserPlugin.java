@@ -8,6 +8,8 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.QParser;
 import org.apache.solr.search.QParserPlugin;
 
+import java.net.URI;
+
 public class TraveltimeQParserPlugin extends QParserPlugin {
    public static String PARAM_PREFIX = "traveltime_";
    private String cacheName = RequestCache.NAME;
@@ -17,9 +19,13 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
       Object cache = args.get("cache");
       if(cache != null) cacheName = cache.toString();
 
+      Object uriVal = args.get("api_uri");
+      URI uri = null;
+      if(uriVal != null) uri = URI.create(uriVal.toString());
+
       String appId = args.get("app_id").toString();
       String apiKey = args.get("api_key").toString();
-      FetcherSingleton.INSTANCE.init(appId, apiKey);
+      FetcherSingleton.INSTANCE.init(uri, appId, apiKey);
    }
 
    @Override

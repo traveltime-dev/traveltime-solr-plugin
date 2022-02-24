@@ -40,14 +40,13 @@ public class ProtoFetcher {
       }
    }
 
-   public ProtoFetcher(String id, String key) {
-      val auth = TravelTimeCredentials.builder().appId(id).apiKey(key).build();
-      api = TravelTimeSDK.builder().credentials(auth).build();
-   }
-
    public ProtoFetcher(URI uri, String id, String key) {
       val auth = TravelTimeCredentials.builder().appId(id).apiKey(key).build();
-      api = TravelTimeSDK.builder().baseProtoUri(uri).credentials(auth).build();
+      val builder = TravelTimeSDK.builder().credentials(auth);
+      if(uri != null) {
+         builder.baseProtoUri(uri);
+      }
+      api = builder.build();
    }
 
    public List<Integer> getTimes(Coordinates origin, List<Coordinates> destinations, int limit, Transportation mode, Country country) {
