@@ -19,6 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Build the plugin
+        run: ./gradlew shadowJar
+
       - name: Set up the test solr instance
         run: |
           DOCKER_BUILDKIT=1 docker build . -f src/test/resources/Dockerfile -t solr-test
