@@ -8,7 +8,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 docker run -d --rm --name $IMAGE_NAME $IMAGE_NAME solr-fg -a "-Xss4M"
 docker exec -d $IMAGE_NAME ./mock-proto-server --port 80
-docker exec $IMAGE_NAME solr create_core -c london
+docker exec $IMAGE_NAME bash -c 'sleep 5; solr create_core -c london'
 docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-field": {"name":"coords", "type":"location", "stored":true}}' http://localhost:8983/solr/london/schema
 docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-cache": {"name": "traveltime_fuzzy", "class": "com.traveltime.plugin.solr.cache.FuzzyRequestCache", "secondary_size": "150000"}}'  http://localhost:8983/solr/london/config
 docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-cache": {"name": "traveltime_exact", "class": "com.traveltime.plugin.solr.cache.ExactRequestCache"}}'  http://localhost:8983/solr/london/config
