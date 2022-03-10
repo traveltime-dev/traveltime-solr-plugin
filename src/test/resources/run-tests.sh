@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 
 trap "docker stop $IMAGE_NAME; exit 1" EXIT
 
