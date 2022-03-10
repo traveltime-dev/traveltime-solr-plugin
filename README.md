@@ -27,7 +27,7 @@ and a `cache`:
 ```
 or
 ```xml
-<cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyRequestCache"/>
+<cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyRequestCache" secondary_size="50000"/>
 ```
 
 ## Querying data
@@ -61,4 +61,4 @@ Therefore, changing any of the parameters will result in a cache miss.
 This is recommended if the cache is only needed to display the times in search results, or if the query parameters are mostly static.
 
 `FuzzyRequestCache` uses only the `origin` and `mode` fields as cache keys.
-This cache is useful for workloads where the set of possible `origin` parameters is limited since it will limit the amount of API calls needed to fetch data from Traveltime.
+This cache is useful for workloads where the set of possible `origin` parameters is limited since it will limit the amount of API calls needed to fetch data from Traveltime. The `secondary_size` controls the size of each per-origin traveltime cache. It should be set to at least the number of documents returned by each query.
