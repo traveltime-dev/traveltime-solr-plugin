@@ -29,6 +29,18 @@ compileJava {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+def imageName = "${project.version.toString().toLowerCase()}-test"
+
+task("dockerBuildTest", type: Exec, dependsOn: [project.shadowJar]) {
+    environment "DOCKER_BUILDKIT", "1"
+    commandLine "docker", "build", ".", "-f", "src/test/resources/Dockerfile", "-t", imageName
+}
+
+task("dockerTest", type: Exec, dependsOn: "dockerBuildTest") {
+    environment "IMAGE_NAME", imageName
+    commandLine "bash", "src/test/resources/run-tests.sh"
+}
+
 dependencies {
     compileOnly "org.apache.solr:solr-core:7.7.3"
     implementation 'com.traveltime:traveltime-sdk-java:1.1.11'
