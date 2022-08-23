@@ -1,4 +1,4 @@
-FROM solr:8.0
+FROM solr:8.11
 
 
 COPY build/libs/*.jar /var/solr/data/lib/
