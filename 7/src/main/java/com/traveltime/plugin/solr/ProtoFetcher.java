@@ -13,8 +13,8 @@ import com.traveltime.sdk.dto.responses.errors.IOError;
 import com.traveltime.sdk.dto.responses.errors.ResponseError;
 import com.traveltime.sdk.dto.responses.errors.TravelTimeError;
 import lombok.val;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -23,7 +23,7 @@ import java.util.List;
 public class ProtoFetcher {
    private final TravelTimeSDK api;
 
-   private final Logger log = LogManager.getLogger();
+   private final Logger log = LoggerFactory.getLogger(ProtoFetcher.class);
 
    private void logError(TravelTimeError left) {
       if (left instanceof IOError) {
