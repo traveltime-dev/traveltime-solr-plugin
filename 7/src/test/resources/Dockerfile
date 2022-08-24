@@ -1,4 +1,4 @@
-FROM solr:7.7
+FROM solr:7.7.3
 
 
 COPY build/libs/*.jar server/solr/lib/
