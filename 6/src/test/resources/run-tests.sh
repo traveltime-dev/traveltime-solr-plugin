@@ -28,6 +28,7 @@ DATA_ARGS="\
   --data-urlencode traveltime_origin=51.509865,-0.118092\
   --data-urlencode country=uk\
   --data-urlencode mode=pt\
+  --data-urlencode wt=json\
 "
 
 docker exec $IMAGE_NAME \
