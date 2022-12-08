@@ -5,13 +5,13 @@ Plugin for Solr that allows users to filter locations using the Traveltime API.
 This is a standard Solr plugin.
 The plugin jar must be copied into the [solr lib directory](https://solr.apache.org/guide/8_4/libs.html#lib-directories)
 
-To use the plugin you **must** add a `queryParser` with the class `com.traveltime.plugin.solr.TraveltimeQParserPlugin`.
+To use the plugin you **must** add a `queryParser` with the class `com.traveltime.plugin.solr.query.TraveltimeValueSourceParser`.
 This query parser has two mandatory string configuration options:
 - `app_id`: this is you API app id.
 - `api_key`: this is the api key that corresponds to the app id.
 
 ```xml
-<queryParser name="traveltime" class="com.traveltime.plugin.solr.TraveltimeQParserPlugin">
+<queryParser name="traveltime" class="com.traveltime.plugin.solr.query.TraveltimeValueSourceParser">
   <str name="app_id">your_app_id_here</str>
   <str name="api_key">your_api_key_here</str>
 </queryParser>
