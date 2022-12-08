@@ -19,7 +19,7 @@ This query parser has two mandatory string configuration options:
 
 To display the travel times returned by the TravelTime API you must configure two more components: a `valueSourceParser`:
 ```xml
-<valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.queryparser.TravelTimeValueSourceParser" />
+<valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.TravelTimeValueSourceParser" />
 ```
 and a `cache`:
 ```xml
