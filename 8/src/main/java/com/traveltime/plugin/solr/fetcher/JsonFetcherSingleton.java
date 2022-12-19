@@ -1,4 +1,4 @@
-package com.traveltime.plugin.solr;
+package com.traveltime.plugin.solr.fetcher;
 
 import java.net.URI;
 

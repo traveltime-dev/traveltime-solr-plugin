@@ -1,6 +1,6 @@
 package com.traveltime.plugin.solr.query.timefilter;
 
-import com.traveltime.plugin.solr.JsonFetcher;
+import com.traveltime.plugin.solr.fetcher.JsonFetcher;
 import com.traveltime.plugin.solr.util.Util;
 import lombok.val;
 import org.apache.solr.common.params.SolrParams;

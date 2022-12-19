@@ -1,6 +1,7 @@
 package com.traveltime.plugin.solr;
 
 import com.traveltime.plugin.solr.cache.RequestCache;
+import com.traveltime.plugin.solr.fetcher.JsonFetcherSingleton;
 import com.traveltime.plugin.solr.query.timefilter.TimeFilterQueryParser;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;

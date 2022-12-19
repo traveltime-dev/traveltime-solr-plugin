@@ -1,10 +1,7 @@
 package com.traveltime.plugin.solr.query.timefilter;
 
-import com.traveltime.plugin.solr.JsonFetcher;
-import com.traveltime.plugin.solr.ProtoFetcher;
+import com.traveltime.plugin.solr.fetcher.JsonFetcher;
 import com.traveltime.plugin.solr.cache.RequestCache;
-import com.traveltime.plugin.solr.query.TraveltimeDelegatingCollector;
-import com.traveltime.plugin.solr.query.TraveltimeQueryParameters;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.lucene.search.IndexSearcher;

@@ -1,6 +1,6 @@
 package com.traveltime.plugin.solr.query.timefilter;
 
-import com.traveltime.plugin.solr.JsonFetcher;
+import com.traveltime.plugin.solr.fetcher.JsonFetcher;
 import com.traveltime.plugin.solr.cache.RequestCache;
 import com.traveltime.plugin.solr.cache.TravelTimes;
 import com.traveltime.plugin.solr.cache.UnprotectedTimes;
@@ -42,7 +42,7 @@ public class TimeFilterDelegatingCollector extends DelegatingCollector {
    private SortedNumericDocValues coords;
 
 
-   public TimeFilterDelegatingCollector(int maxDoc, int segments, TimeFilterQueryParameters params, float scoreWeight, JsonFetcher fetcher, RequestCache cache) {
+   public TimeFilterDelegatingCollector(int maxDoc, int segments, TimeFilterQueryParameters params, float scoreWeight, JsonFetcher fetcher, RequestCache<TimeFilterQueryParameters> cache) {
       this.maxDoc = maxDoc;
       this.contexts = new LeafReaderContext[segments];
       this.contextBaseStart = new int[segments];

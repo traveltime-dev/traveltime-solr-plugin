@@ -1,4 +1,4 @@
-package com.traveltime.plugin.solr;
+package com.traveltime.plugin.solr.fetcher;
 
 import com.google.common.collect.Iterables;
 import com.traveltime.plugin.solr.query.timefilter.TimeFilterQueryParameters;
@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
-public class JsonFetcher {
+public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
    private final TravelTimeSDK api;
 
    private final int locationSizeLimit;

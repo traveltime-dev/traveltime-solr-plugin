@@ -1,6 +1,7 @@
 package com.traveltime.plugin.solr.query;
 
-import com.traveltime.plugin.solr.ProtoFetcher;
+import com.traveltime.plugin.solr.fetcher.Fetcher;
+import com.traveltime.plugin.solr.fetcher.ProtoFetcher;
 import lombok.val;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.request.SolrQueryRequest;
@@ -12,7 +13,7 @@ import static com.traveltime.plugin.solr.util.Util.PARAM_PREFIX;
 public class TraveltimeQueryParser extends QParser {
    private static final String WEIGHT = "weight";
 
-   private final ProtoFetcher fetcher;
+   private final Fetcher<TraveltimeQueryParameters> fetcher;
    private final String cacheName;
 
    public TraveltimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, ProtoFetcher fetcher, String cacheName) {

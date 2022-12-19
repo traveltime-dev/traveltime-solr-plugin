@@ -1,10 +1,9 @@
 package com.traveltime.plugin.solr.query;
 
-
-import com.traveltime.plugin.solr.ProtoFetcher;
 import com.traveltime.plugin.solr.cache.RequestCache;
 import com.traveltime.plugin.solr.cache.TravelTimes;
 import com.traveltime.plugin.solr.cache.UnprotectedTimes;
+import com.traveltime.plugin.solr.fetcher.Fetcher;
 import com.traveltime.plugin.solr.util.Util;
 import com.traveltime.sdk.dto.common.Coordinates;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
@@ -20,6 +19,7 @@ import org.apache.lucene.search.Scorable;
 import org.apache.lucene.util.BitSetIterator;
 import org.apache.lucene.util.FixedBitSet;
 import org.apache.solr.search.DelegatingCollector;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,14 +35,14 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
    private final TraveltimeQueryParameters params;
    private final float scoreWeight;
    private final Int2ObjectOpenHashMap<Coordinates> globalDoc2Coords;
-   private final ProtoFetcher fetcher;
-   private final RequestCache cache;
+   private final Fetcher<TraveltimeQueryParameters> fetcher;
+   private final RequestCache<TraveltimeQueryParameters> cache;
 
    private Object2IntOpenHashMap<Coordinates> pointToTime;
    private SortedNumericDocValues coords;
 
 
-   public TraveltimeDelegatingCollector(int maxDoc, int segments, TraveltimeQueryParameters params, float scoreWeight, ProtoFetcher fetcher, RequestCache cache) {
+   public TraveltimeDelegatingCollector(int maxDoc, int segments, TraveltimeQueryParameters params, float scoreWeight, Fetcher<TraveltimeQueryParameters> fetcher, RequestCache<TraveltimeQueryParameters> cache) {
       this.maxDoc = maxDoc;
       this.contexts = new LeafReaderContext[segments];
       this.contextBaseStart = new int[segments];
@@ -94,13 +94,7 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
       if (destinations.size() == 0) {
          times = new ArrayList<>();
       } else {
-         times = fetcher.getTimes(
-                 params.getOrigin(),
-                 destinations,
-                 params.getLimit(),
-                 params.getMode(),
-                 params.getCountry()
-         );
+         times = fetcher.getTimes(params, destinations);
       }
 
       cachedResults.putAll(params.getLimit(), destinations, times);
