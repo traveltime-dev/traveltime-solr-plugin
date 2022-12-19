@@ -18,6 +18,7 @@ import org.apache.solr.search.SyntaxError;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Data
 public class TimeFilterQueryParameters {
@@ -26,11 +27,11 @@ public class TimeFilterQueryParameters {
     private final Instant time;
     @With private final int travelTime;
     private final Transportation transportation;
-    private final FullRange range;
+    private final Optional<FullRange> range;
     private final SearchType searchType;
 
     public enum SearchType {
-        ARRIVAL, DEPARTURE;
+        ARRIVAL, DEPARTURE
     }
 
     public static final String FIELD = "field";
@@ -64,7 +65,7 @@ public class TimeFilterQueryParameters {
             String timeStr,
             String travelTimeStr,
             String transportationStr,
-            String rangeStr
+            Optional<String> rangeStr
     ) throws SyntaxError {
 
         val fieldType = schema.getField(field);
@@ -75,7 +76,7 @@ public class TimeFilterQueryParameters {
         val locationCoords = JsonUtils.fromJson(locationStr, Coordinates.class);
         val time = Instant.parse(timeStr);
         val transportation = JsonUtils.fromJson(transportationStr, Transportation.class);
-        val range = JsonUtils.fromJson(rangeStr, FullRange.class);
+        val range = rangeStr.map(r ->  JsonUtils.fromJson(r, FullRange.class));
 
         val location = new Location("location", getOrThrow(locationCoords));
 
@@ -89,6 +90,8 @@ public class TimeFilterQueryParameters {
             throw new SyntaxError("traveltime limit must be > 0");
         }
 
+        Optional<FullRange> rangeOptional = range.isPresent() ? Optional.of(getOrThrow(range.get())) : Optional.empty();
+
 
         return new TimeFilterQueryParameters(
                 field,
@@ -96,7 +99,7 @@ public class TimeFilterQueryParameters {
                 time,
                 travelTime,
                 getOrThrow(transportation),
-                getOrThrow(range),
+                rangeOptional,
                 searchType
         );
     }

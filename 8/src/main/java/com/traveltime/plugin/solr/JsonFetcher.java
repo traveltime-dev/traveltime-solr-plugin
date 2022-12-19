@@ -100,36 +100,42 @@ public class JsonFetcher {
                          .location(parameters.getLocation())
                          .locations(locations);
 
-                 switch (parameters.getSearchType()) {
-                    case ARRIVAL:
-                       requestBuilder.arrivalSearch(
-                               ArrivalSearch
-                                       .builder()
-                                       .id("search")
-                                       .arrivalLocationId(parameters.getLocation().getId())
-                                       .departureLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
-                                       .arrivalTime(parameters.getTime())
-                                       .travelTime(parameters.getTravelTime())
-                                       .properties(Collections.singletonList(Property.TRAVEL_TIME))
-                                       .transportation(parameters.getTransportation())
-                                       .range(parameters.getRange()).build()
-                       );
-                       break;
-                    case DEPARTURE:
-                       requestBuilder.departureSearch(
-                               DepartureSearch
-                                       .builder()
-                                       .id("search")
-                                       .departureLocationId(parameters.getLocation().getId())
-                                       .arrivalLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
-                                       .departureTime(parameters.getTime())
-                                       .travelTime(parameters.getTravelTime())
-                                       .properties(Collections.singletonList(Property.TRAVEL_TIME))
-                                       .transportation(parameters.getTransportation())
-                                       .range(parameters.getRange()).build()
-                       );
-                       break;
-                 }
+                  switch (parameters.getSearchType()) {
+                      case ARRIVAL:
+                          val arrivalSearchBuilder = ArrivalSearch
+                                  .builder()
+                                  .id("search")
+                                  .arrivalLocationId(parameters.getLocation().getId())
+                                  .departureLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
+                                  .arrivalTime(parameters.getTime())
+                                  .travelTime(parameters.getTravelTime())
+                                  .properties(Collections.singletonList(Property.TRAVEL_TIME))
+                                  .transportation(parameters.getTransportation());
+                          val arrivalSearch = parameters
+                                  .getRange()
+                                  .map(arrivalSearchBuilder::range)
+                                  .orElse(arrivalSearchBuilder)
+                                  .build();
+                          requestBuilder.arrivalSearch(arrivalSearch);
+                          break;
+                      case DEPARTURE:
+                          val departureSearchBuilder = DepartureSearch
+                                  .builder()
+                                  .id("search")
+                                  .departureLocationId(parameters.getLocation().getId())
+                                  .arrivalLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
+                                  .departureTime(parameters.getTime())
+                                  .travelTime(parameters.getTravelTime())
+                                  .properties(Collections.singletonList(Property.TRAVEL_TIME))
+                                  .transportation(parameters.getTransportation());
+                          val departureSearch = parameters
+                                  .getRange()
+                                  .map(departureSearchBuilder::range)
+                                  .orElse(departureSearchBuilder)
+                                  .build();
+                          requestBuilder.departureSearch(departureSearch);
+                          break;
+                  }
 
                  return requestBuilder.build();
               });

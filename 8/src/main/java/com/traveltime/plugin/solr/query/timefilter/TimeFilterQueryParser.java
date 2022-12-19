@@ -75,7 +75,7 @@ public class TimeFilterQueryParser extends QParser {
                  getBestParam(TimeFilterQueryParameters.ARRIVAL_TIME),
                  getBestParam(TimeFilterQueryParameters.TRAVEL_TIME),
                  getBestParam(TimeFilterQueryParameters.TRANSPORTATION),
-                 getBestParam(TimeFilterQueryParameters.RANGE)
+                 getOptionalBestParam(TimeFilterQueryParameters.RANGE)
          );
       } else {
          queryParams = TimeFilterQueryParameters.fromStrings(
@@ -86,7 +86,7 @@ public class TimeFilterQueryParser extends QParser {
                  getBestParam(TimeFilterQueryParameters.DEPARTURE_TIME),
                  getBestParam(TimeFilterQueryParameters.TRAVEL_TIME),
                  getBestParam(TimeFilterQueryParameters.TRANSPORTATION),
-                 getBestParam(TimeFilterQueryParameters.RANGE)
+                 getOptionalBestParam(TimeFilterQueryParameters.RANGE)
          );
       }
 

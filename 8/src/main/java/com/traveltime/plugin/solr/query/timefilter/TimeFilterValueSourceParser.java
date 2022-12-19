@@ -77,7 +77,7 @@ public class TimeFilterValueSourceParser extends ValueSourceParser {
                  getParam(params, TimeFilterQueryParameters.ARRIVAL_TIME),
                  getParam(params, TimeFilterQueryParameters.TRAVEL_TIME),
                  getParam(params, TimeFilterQueryParameters.TRANSPORTATION),
-                 getParam(params, TimeFilterQueryParameters.RANGE)
+                 getOptionalParam(params, TimeFilterQueryParameters.RANGE)
          );
       } else {
          queryParams = TimeFilterQueryParameters.fromStrings(
@@ -88,7 +88,7 @@ public class TimeFilterValueSourceParser extends ValueSourceParser {
                  getParam(params, TimeFilterQueryParameters.DEPARTURE_TIME),
                  getParam(params, TimeFilterQueryParameters.TRAVEL_TIME),
                  getParam(params, TimeFilterQueryParameters.TRANSPORTATION),
-                 getParam(params, TimeFilterQueryParameters.RANGE)
+                 getOptionalParam(params, TimeFilterQueryParameters.RANGE)
          );
       }
 
