@@ -4,6 +4,8 @@ import com.traveltime.sdk.dto.common.Coordinates;
 import com.traveltime.sdk.dto.requests.proto.Country;
 import com.traveltime.sdk.dto.requests.proto.Transportation;
 import lombok.val;
+import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.search.SyntaxError;
 import org.slf4j.Logger;
 import org.apache.lucene.geo.GeoEncodingUtils;
 import org.apache.lucene.geo.GeoUtils;
@@ -19,6 +21,8 @@ public final class Util {
    private Util() {
       throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
    }
+
+   public static final String PARAM_PREFIX = "traveltime_";
 
    public static Coordinates decode(long value) {
       double lat = GeoEncodingUtils.decodeLatitude((int) (value >> 32));
@@ -59,6 +63,24 @@ public final class Util {
 
    public static Optional<Country> findCountryByName(String name) {
       return Arrays.stream(Country.values()).filter(it -> it.getValue().equals(name)).findFirst();
+   }
+
+   public static String getParam(SolrParams params, String name) {
+      String param = params.get(PARAM_PREFIX + name);
+      if(param != null) return param;
+      return params.get(name);
+   }
+
+   public static String getBestParam(SolrParams localParams, SolrParams params, String name) {
+      if (localParams != null) {
+         String param = getParam(localParams, name);
+         if(param != null) return param;
+      }
+      return getParam(params, name);
+   }
+
+   public static void assertPresent(String param, String name) throws SyntaxError {
+      if(param == null) throw new SyntaxError("missing " + name + " parameter for TravelTime request");
    }
 
    public static <A> A time(Logger logger, Supplier<A> expr) {

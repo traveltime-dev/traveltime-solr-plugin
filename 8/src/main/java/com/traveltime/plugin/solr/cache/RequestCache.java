@@ -7,10 +7,10 @@ import org.apache.solr.search.NoOpRegenerator;
 
 import java.util.Map;
 
-public abstract class RequestCache extends FastLRUCache<TraveltimeQueryParameters, TravelTimes> {
+public abstract class RequestCache<P> extends FastLRUCache<P, TravelTimes> {
    public static String NAME = "traveltime";
 
-   public abstract TravelTimes getOrFresh(TraveltimeQueryParameters key);
+   public abstract TravelTimes getOrFresh(P key);
 
    @Override
    public void init(Map<String, String> args, CacheRegenerator ignored) {

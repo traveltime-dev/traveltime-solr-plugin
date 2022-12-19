@@ -11,7 +11,7 @@ import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
 import org.apache.solr.search.ValueSourceParser;
 
-import static com.traveltime.plugin.solr.TraveltimeQParserPlugin.PARAM_PREFIX;
+import static com.traveltime.plugin.solr.util.Util.PARAM_PREFIX;
 
 public class TraveltimeValueSourceParser extends ValueSourceParser {
    private String cacheName = RequestCache.NAME;
@@ -35,7 +35,7 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
    @Override
    public ValueSource parse(FunctionQParser fp) throws SyntaxError {
       SolrQueryRequest req = fp.getReq();
-      RequestCache cache = (RequestCache) req.getSearcher().getCache(cacheName);
+      RequestCache<TraveltimeQueryParameters> cache = (RequestCache<TraveltimeQueryParameters>) req.getSearcher().getCache(cacheName);
       if (cache == null) {
          throw new SolrException(
              SolrException.ErrorCode.BAD_REQUEST,

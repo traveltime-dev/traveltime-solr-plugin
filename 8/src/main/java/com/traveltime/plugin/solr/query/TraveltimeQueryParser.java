@@ -7,7 +7,7 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.QParser;
 import org.apache.solr.search.SyntaxError;
 
-import static com.traveltime.plugin.solr.TraveltimeQParserPlugin.PARAM_PREFIX;
+import static com.traveltime.plugin.solr.util.Util.PARAM_PREFIX;
 
 public class TraveltimeQueryParser extends QParser {
    private static final String WEIGHT = "weight";
