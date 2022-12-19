@@ -9,9 +9,12 @@ import org.apache.solr.search.QParser;
 import org.apache.solr.search.QParserPlugin;
 
 import java.net.URI;
+import java.util.Optional;
 
 public class TimeFilterQParserPlugin extends QParserPlugin {
    private String cacheName = RequestCache.NAME;
+
+   private static final Integer DEFAULT_LOCATION_SIZE_LIMIT = 2000;
 
    @Override
    public void init(NamedList args) {
@@ -24,7 +27,12 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
 
       String appId = args.get("app_id").toString();
       String apiKey = args.get("api_key").toString();
-      JsonFetcherSingleton.INSTANCE.init(uri, appId, apiKey);
+      int locationLimit =
+              Optional.ofNullable(args.get("location_limit"))
+                      .map(x -> Integer.parseInt(x.toString()))
+                      .orElse(DEFAULT_LOCATION_SIZE_LIMIT);
+
+      JsonFetcherSingleton.INSTANCE.init(uri, appId, apiKey, locationLimit);
    }
 
    @Override

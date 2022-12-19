@@ -1,5 +1,6 @@
 package com.traveltime.plugin.solr;
 
+import com.google.common.collect.Iterables;
 import com.traveltime.plugin.solr.query.timefilter.TimeFilterQueryParameters;
 import com.traveltime.plugin.solr.util.Util;
 import com.traveltime.sdk.TravelTimeSDK;
@@ -27,9 +28,12 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
 
 public class JsonFetcher {
    private final TravelTimeSDK api;
+
+   private final int locationSizeLimit;
 
    private final Logger log = LoggerFactory.getLogger(JsonFetcher.class);
 
@@ -48,7 +52,7 @@ public class JsonFetcher {
       }
    }
 
-   public JsonFetcher(URI uri, String id, String key) {
+   public JsonFetcher(URI uri, String id, String key, int locationSizeLimit) {
       val auth = TravelTimeCredentials.builder().appId(id).apiKey(key).build();
       val client = new OkHttpClient.Builder()
               .connectTimeout(5, TimeUnit.MINUTES)
@@ -60,12 +64,11 @@ public class JsonFetcher {
          builder.baseProtoUri(uri);
       }
       api = builder.build();
+      this.locationSizeLimit = locationSizeLimit;
    }
 
-   private List<Integer> extractTimes(TimeFilterResponse response) {
+   private Integer[] extractTimes(TimeFilterResponse response, Integer[] travelTimes) {
       val result = response.getResults().get(0);
-
-      val travelTimes = new Integer[result.getLocations().size() + result.getUnreachable().size()];
 
       result.getLocations()
               .forEach(location ->
@@ -77,65 +80,73 @@ public class JsonFetcher {
                       travelTimes[Integer.parseInt(unreachableId)] = -1
               );
 
-      return Arrays.stream(travelTimes).collect(Collectors.toList());
+      return travelTimes;
    }
 
    public List<Integer> getTimes(TimeFilterQueryParameters parameters, ArrayList<Coordinates> points) {
-      val requestBuilder = TimeFilterRequest.builder();
 
       val locations = IntStream
-              .range(0,points.size())
+              .range(0, points.size())
               .mapToObj(i -> new Location(String.valueOf(i), points.get(i)))
               .collect(Collectors.toList());
 
-      requestBuilder
-              .location(parameters.getLocation())
-              .locations(locations);
+      val groupedLocations = Iterables.partition(locations, locationSizeLimit);
 
-      switch (parameters.getSearchType()) {
-          case ARRIVAL:
-             requestBuilder.arrivalSearch(
-                     ArrivalSearch
-                              .builder()
-                              .id("search")
-                              .arrivalLocationId(parameters.getLocation().getId())
-                              .departureLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
-                              .arrivalTime(parameters.getTime())
-                              .travelTime(parameters.getTravelTime())
-                              .properties(Collections.singletonList(Property.TRAVEL_TIME))
-                              .transportation(parameters.getTransportation())
-                              .range(parameters.getRange()).build()
-             );
-             break;
-         case DEPARTURE:
-            requestBuilder.departureSearch(
-                    DepartureSearch
-                            .builder()
-                            .id("search")
-                            .departureLocationId(parameters.getLocation().getId())
-                            .arrivalLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
-                            .departureTime(parameters.getTime())
-                            .travelTime(parameters.getTravelTime())
-                            .properties(Collections.singletonList(Property.TRAVEL_TIME))
-                            .transportation(parameters.getTransportation())
-                            .range(parameters.getRange()).build()
-            );
-            break;
-      }
+      val requests = StreamSupport.stream(groupedLocations.spliterator(), true)
+              .map(locationGroup -> {
+                 val requestBuilder = TimeFilterRequest.builder();
 
-      val request = requestBuilder.build();
+                 requestBuilder
+                         .location(parameters.getLocation())
+                         .locations(locations);
 
+                 switch (parameters.getSearchType()) {
+                    case ARRIVAL:
+                       requestBuilder.arrivalSearch(
+                               ArrivalSearch
+                                       .builder()
+                                       .id("search")
+                                       .arrivalLocationId(parameters.getLocation().getId())
+                                       .departureLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
+                                       .arrivalTime(parameters.getTime())
+                                       .travelTime(parameters.getTravelTime())
+                                       .properties(Collections.singletonList(Property.TRAVEL_TIME))
+                                       .transportation(parameters.getTransportation())
+                                       .range(parameters.getRange()).build()
+                       );
+                       break;
+                    case DEPARTURE:
+                       requestBuilder.departureSearch(
+                               DepartureSearch
+                                       .builder()
+                                       .id("search")
+                                       .departureLocationId(parameters.getLocation().getId())
+                                       .arrivalLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
+                                       .departureTime(parameters.getTime())
+                                       .travelTime(parameters.getTravelTime())
+                                       .properties(Collections.singletonList(Property.TRAVEL_TIME))
+                                       .transportation(parameters.getTransportation())
+                                       .range(parameters.getRange()).build()
+                       );
+                       break;
+                 }
 
-      log.info(String.format("Fetching %d locations", request.getLocations().size() - 1));
-      val result = Util.time(log, () -> api.send(request));
+                 return requestBuilder.build();
+              });
 
-      return result.fold(
-              err -> {
-                 logError(err);
-                 throw new RuntimeException(err.toString());
-              },
-              this::extractTimes
-      );
+       log.info(String.format("Fetching %d locations", points.size()));
+
+       Integer[] resultArray = new Integer[locations.size()];
+
+       requests.map(request -> Util.time(log, () -> api.send(request)))
+               .forEach(result -> result.fold(err -> {
+                                   logError(err);
+                                   throw new RuntimeException(err.toString());
+                               },
+                               succ -> extractTimes(succ, resultArray))
+               );
+
+       return Arrays.stream(resultArray).collect(Collectors.toList());
    }
 
 }
