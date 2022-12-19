@@ -15,6 +15,7 @@ import com.traveltime.sdk.dto.responses.errors.IOError;
 import com.traveltime.sdk.dto.responses.errors.ResponseError;
 import com.traveltime.sdk.dto.responses.errors.TravelTimeError;
 import lombok.val;
+import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -48,7 +50,12 @@ public class JsonFetcher {
 
    public JsonFetcher(URI uri, String id, String key) {
       val auth = TravelTimeCredentials.builder().appId(id).apiKey(key).build();
-      val builder = TravelTimeSDK.builder().credentials(auth);
+      val client = new OkHttpClient.Builder()
+              .connectTimeout(5, TimeUnit.MINUTES)
+              .callTimeout(5, TimeUnit.MINUTES)
+              .readTimeout(5, TimeUnit.MINUTES)
+              .build();
+      val builder = TravelTimeSDK.builder().credentials(auth).client(client);
       if(uri != null) {
          builder.baseProtoUri(uri);
       }
