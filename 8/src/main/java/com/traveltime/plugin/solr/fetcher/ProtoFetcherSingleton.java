@@ -1,8 +1,8 @@
-package com.traveltime.plugin.solr;
+package com.traveltime.plugin.solr.fetcher;
 
 import java.net.URI;
 
-public enum FetcherSingleton {
+public enum ProtoFetcherSingleton {
    INSTANCE;
 
    private ProtoFetcher underlying = null;

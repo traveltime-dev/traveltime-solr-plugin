@@ -5,11 +5,14 @@ Plugin for Solr that allows users to filter locations using the Traveltime API.
 This is a standard Solr plugin.
 The plugin jar must be copied into the [solr lib directory](https://solr.apache.org/guide/8_4/libs.html#lib-directories)
 
-To use the plugin you **must** add a `queryParser` with the class `com.traveltime.plugin.solr.TraveltimeQParserPlugin`.
+To use the plugin you **must** add a `queryParser` with the class `com.traveltime.plugin.solr.TraveltimeQParserPlugin` or
+`com.traveltime.plugin.solr.TimeFilterQParserPlugin` (currently only available for solar version 8).
 This query parser has two mandatory string configuration options:
 - `app_id`: this is you API app id.
 - `api_key`: this is the api key that corresponds to the app id.
 
+The `TimeFilterQParserPlugin` has an optional integer field `location_limit` which represents the maximum amount of locations
+that can be sent in a single request. Defaults to 2000, only increase this parameter if you API plan supports larger requests.
 ```xml
 <queryParser name="traveltime" class="com.traveltime.plugin.solr.TraveltimeQParserPlugin">
   <str name="app_id">your_app_id_here</str>
@@ -21,16 +24,24 @@ To display the travel times returned by the TravelTime API you must configure tw
 ```xml
 <valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.TravelTimeValueSourceParser" />
 ```
+or, if using `TimeFilterQParserPlugin`
+```xml
+<valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.timefilter.TimeFilterValueSourceParser" />
+```
 and a `cache`:
 ```xml
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.ExactRequestCache"/>
+or
+<cache name="traveltime" class="com.traveltime.plugin.solr.cache.ExactTimeFilterRequestCache"/>
 ```
 or
 ```xml
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyRequestCache" secondary_size="50000"/>
+or
+<cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyTimeFilterRequestCache" secondary_size="50000"/>
 ```
 
-## Querying data
+## Querying data using proto time-filter/fast requests
 The traveltime query can only be used as a filter query, and can only be used with fields that are indexed as `location`.
 The query accepts the following (mandatory) configuration options:
 - `origin`: the point from which travel time will be measured. The accepted formats are:
@@ -42,7 +53,40 @@ The query accepts the following (mandatory) configuration options:
 - `country`: Country that the `origin` is in. Currently may only be one of: `uk`, `nl`, `at`, `be`, `de`, `fr`, `ie`, `lt`.
 
 The configuration options may be passed as local query parameters: `?fq={!traveltime origin=51.53,-0.15 field=coords limit=7200 mode=pt country=uk}`, or as raw query parameters prefixed with `"traveltime_"`: `?fq={!traveltime}&traveltime_origin=51.53,-0.15&traveltime_field=coords&traveltime_limit=7200&traveltime_mode=pt&traveltime_country=uk}`.
-If a parameter is specified in both ways, the local parameter takes precedence. 
+If a parameter is specified in both ways, the local parameter takes precedence.
+
+## Querying data using json time-filter requests
+The query accepts the following configuration options:
+- `field`: the document field that will be used as the destination in the Traveltime query.
+- `travel_time`: the travel time limit in seconds. Must be non-negative.
+- For arrival searches:
+  - `arrival_time`: arrival time in ISO8601
+  - `arrival_location`: string containing a JSON object with `lat` and `lng` keys describing the coordinates 
+    of the arrival location
+- For departure searches:
+  - `departure_time`: departure time in ISO8601
+  - `departure_location`: string containing a JSON object with `lat` and `lng` keys describing the coordinates
+    of the departure location
+- `transportation`: a string containing a JSON object describing the transportation mode as defined by the Traveltime API:
+  https://docs.traveltime.com/api/reference/travel-time-distance-matrix#departure_searches-transportation
+- (optional) `range`: : a string containing a JSON object describing the range search as defined by the Traveltime API:
+  https://docs.traveltime.com/api/reference/travel-time-distance-matrix#departure_searches-range
+
+An example query using `curl`:
+```shell
+curl
+  --data-urlencode 'q=*:*'
+  --data-urlencode 'traveltime_field=coords'
+  --data-urlencode 'traveltime_travel_time=3000'
+  --data-urlencode 'traveltime_arrival_location={"lat":51.536067,"lng":-0.153596}'
+  --data-urlencode 'traveltime_arrival_time=2022-12-19T15:00:00Z'
+  --data-urlencode 'transportation={"type":"public_transport"}'
+  --data-urlencode fq="{!traveltime weight=1}"
+  $URL
+```
+
+The configuration options may be passed as local query parameters, or as raw query parameters prefixed with `"traveltime_"`.
+If a parameter is specified in both ways, the local parameter takes precedence.
 
 ## Displaying travel times
 
