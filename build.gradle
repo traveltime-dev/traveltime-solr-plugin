@@ -18,7 +18,8 @@ configure(subprojects) {
     repositories {
         mavenCentral()
         maven {
-            url "https://maven.restlet.org/"
+            url "http://maven.restlet.org/"
+            allowInsecureProtocol = true
         }
     }
 
