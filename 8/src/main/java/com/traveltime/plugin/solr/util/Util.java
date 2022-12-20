@@ -4,8 +4,6 @@ import com.traveltime.sdk.dto.common.Coordinates;
 import com.traveltime.sdk.dto.requests.proto.Country;
 import com.traveltime.sdk.dto.requests.proto.Transportation;
 import lombok.val;
-import org.apache.solr.common.params.SolrParams;
-import org.apache.solr.search.SyntaxError;
 import org.slf4j.Logger;
 import org.apache.lucene.geo.GeoEncodingUtils;
 import org.apache.lucene.geo.GeoUtils;
