@@ -31,10 +31,14 @@ or, if using `TimeFilterQParserPlugin`
 and a `cache`:
 ```xml
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.ExactRequestCache"/>
+or
+<cache name="traveltime" class="com.traveltime.plugin.solr.cache.ExactTimeFilterRequestCache"/>
 ```
 or
 ```xml
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyRequestCache" secondary_size="50000"/>
+or
+<cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyTimeFilterRequestCache" secondary_size="50000"/>
 ```
 
 ## Querying data using proto time-filter/fast requests
