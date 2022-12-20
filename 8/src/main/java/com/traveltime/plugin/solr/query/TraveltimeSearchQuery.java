@@ -1,7 +1,6 @@
 package com.traveltime.plugin.solr.query;
 
 import com.traveltime.plugin.solr.fetcher.Fetcher;
-import com.traveltime.plugin.solr.fetcher.ProtoFetcher;
 import com.traveltime.plugin.solr.cache.RequestCache;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -13,10 +12,10 @@ import org.apache.solr.search.SolrIndexSearcher;
 
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TraveltimeSearchQuery extends ExtendedQueryBase implements PostFilter {
-   private final TraveltimeQueryParameters params;
+public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQueryBase implements PostFilter {
+   private final Params params;
    private final float weight;
-   private final Fetcher<TraveltimeQueryParameters> fetcher;
+   private final Fetcher<Params> fetcher;
    private final String cacheName;
 
    @Override
@@ -27,10 +26,10 @@ public class TraveltimeSearchQuery extends ExtendedQueryBase implements PostFilt
    @Override
    public DelegatingCollector getFilterCollector(IndexSearcher indexSearcher) {
       SolrIndexSearcher searcher = (SolrIndexSearcher)indexSearcher;
-      RequestCache<TraveltimeQueryParameters> cache = (RequestCache<TraveltimeQueryParameters>) searcher.getCache(cacheName);
+      RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
       int maxDoc = searcher.maxDoc();
       int leafCount = searcher.getTopReaderContext().leaves().size();
-      return new TraveltimeDelegatingCollector(maxDoc, leafCount, params, weight, fetcher, cache);
+      return new TraveltimeDelegatingCollector<>(maxDoc, leafCount, params, weight, fetcher, cache);
    }
 
    @Override

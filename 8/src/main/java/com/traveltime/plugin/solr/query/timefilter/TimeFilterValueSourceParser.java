@@ -1,18 +1,16 @@
 package com.traveltime.plugin.solr.query.timefilter;
 
 import com.traveltime.plugin.solr.cache.RequestCache;
-import com.traveltime.plugin.solr.util.Util;
+import com.traveltime.plugin.solr.query.ParamSource;
+import com.traveltime.plugin.solr.query.TraveltimeValueSource;
 import lombok.val;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.solr.common.SolrException;
-import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
 import org.apache.solr.search.ValueSourceParser;
-
-import java.util.Optional;
 
 public class TimeFilterValueSourceParser extends ValueSourceParser {
    private String cacheName = RequestCache.NAME;
@@ -23,18 +21,6 @@ public class TimeFilterValueSourceParser extends ValueSourceParser {
       Object cache = args.get("cache");
       if(cache != null) cacheName = cache.toString();
    }
-
-   private String getParam(SolrParams params, String name) throws SyntaxError {
-      String param = Util.getParam(params, name);
-      Util.assertPresent(param, name);
-      return param;
-   }
-
-   private Optional<String> getOptionalParam(SolrParams params, String name) {
-      String param = Util.getParam(params, name);
-      return Optional.ofNullable(param);
-   }
-
 
    @Override
    public ValueSource parse(FunctionQParser fp) throws SyntaxError {
@@ -47,13 +33,13 @@ public class TimeFilterValueSourceParser extends ValueSourceParser {
          );
       }
 
-      SolrParams params = fp.getParams();
+      ParamSource params = new ParamSource(fp.getParams());
 
-      val arrivalTime = getOptionalParam(params, TimeFilterQueryParameters.ARRIVAL_TIME);
-      val arrivalLocation = getOptionalParam(params, TimeFilterQueryParameters.ARRIVAL_LOCATION);
+      val arrivalTime = params.getOptionalParam(TimeFilterQueryParameters.ARRIVAL_TIME);
+      val arrivalLocation = params.getOptionalParam(TimeFilterQueryParameters.ARRIVAL_LOCATION);
 
-      val departureTime = getOptionalParam(params, TimeFilterQueryParameters.DEPARTURE_TIME);
-      val departureLocation = getOptionalParam(params, TimeFilterQueryParameters.DEPARTURE_LOCATION);
+      val departureTime = params.getOptionalParam(TimeFilterQueryParameters.DEPARTURE_TIME);
+      val departureLocation = params.getOptionalParam(TimeFilterQueryParameters.DEPARTURE_LOCATION);
 
       if(arrivalTime.isPresent() != arrivalLocation.isPresent()) {
          throw new SyntaxError(String.format("Only one of [%s, %s] was defined. Either both must be defined or none.", TimeFilterQueryParameters.ARRIVAL_TIME, TimeFilterQueryParameters.ARRIVAL_LOCATION));
@@ -72,26 +58,26 @@ public class TimeFilterValueSourceParser extends ValueSourceParser {
          queryParams = TimeFilterQueryParameters.fromStrings(
                  req.getSchema(),
                  TimeFilterQueryParameters.SearchType.ARRIVAL,
-                 getParam(params, TimeFilterQueryParameters.FIELD),
-                 getParam(params, TimeFilterQueryParameters.ARRIVAL_LOCATION),
-                 getParam(params, TimeFilterQueryParameters.ARRIVAL_TIME),
-                 getParam(params, TimeFilterQueryParameters.TRAVEL_TIME),
-                 getParam(params, TimeFilterQueryParameters.TRANSPORTATION),
-                 getOptionalParam(params, TimeFilterQueryParameters.RANGE)
+                 params.getParam(TimeFilterQueryParameters.FIELD),
+                 params.getParam(TimeFilterQueryParameters.ARRIVAL_LOCATION),
+                 params.getParam(TimeFilterQueryParameters.ARRIVAL_TIME),
+                 params.getParam(TimeFilterQueryParameters.TRAVEL_TIME),
+                 params.getParam(TimeFilterQueryParameters.TRANSPORTATION),
+                 params.getOptionalParam(TimeFilterQueryParameters.RANGE)
          );
       } else {
          queryParams = TimeFilterQueryParameters.fromStrings(
                  req.getSchema(),
                  TimeFilterQueryParameters.SearchType.DEPARTURE,
-                 getParam(params, TimeFilterQueryParameters.FIELD),
-                 getParam(params, TimeFilterQueryParameters.DEPARTURE_LOCATION),
-                 getParam(params, TimeFilterQueryParameters.DEPARTURE_TIME),
-                 getParam(params, TimeFilterQueryParameters.TRAVEL_TIME),
-                 getParam(params, TimeFilterQueryParameters.TRANSPORTATION),
-                 getOptionalParam(params, TimeFilterQueryParameters.RANGE)
+                 params.getParam(TimeFilterQueryParameters.FIELD),
+                 params.getParam(TimeFilterQueryParameters.DEPARTURE_LOCATION),
+                 params.getParam(TimeFilterQueryParameters.DEPARTURE_TIME),
+                 params.getParam(TimeFilterQueryParameters.TRAVEL_TIME),
+                 params.getParam(TimeFilterQueryParameters.TRANSPORTATION),
+                 params.getOptionalParam(TimeFilterQueryParameters.RANGE)
          );
       }
 
-      return new TimeFilterValueSource(queryParams, cache.getOrFresh(queryParams));
+      return new TraveltimeValueSource<>(queryParams, cache.getOrFresh(queryParams));
    }
 }

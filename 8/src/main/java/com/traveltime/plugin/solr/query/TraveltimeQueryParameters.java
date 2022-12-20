@@ -15,12 +15,17 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Data
-public class TraveltimeQueryParameters {
+public class TraveltimeQueryParameters implements QueryParams {
    private final String field;
    private final Coordinates origin;
    private final int limit;
    @With private final Transportation mode;
    @With private final Country country;
+
+   @Override
+   public int getTravelTime() {
+      return limit;
+   }
 
    public static final String FIELD = "field";
    public static final String ORIGIN = "origin";

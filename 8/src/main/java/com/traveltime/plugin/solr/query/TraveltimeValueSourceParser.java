@@ -4,14 +4,12 @@ import com.traveltime.plugin.solr.cache.RequestCache;
 import lombok.val;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.solr.common.SolrException;
-import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
 import org.apache.solr.search.ValueSourceParser;
 
-import static com.traveltime.plugin.solr.util.Util.PARAM_PREFIX;
 
 public class TraveltimeValueSourceParser extends ValueSourceParser {
    private String cacheName = RequestCache.NAME;
@@ -22,15 +20,6 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
       Object cache = args.get("cache");
       if(cache != null) cacheName = cache.toString();
    }
-
-   private String getParam(SolrParams params, String name) throws SyntaxError {
-      String param = params.get(PARAM_PREFIX + name);
-      if(param != null) return param;
-      param = params.get(name);
-      if(param != null) return param;
-      throw new SyntaxError("missing " + name + " parameter for TravelTime value source");
-   }
-
 
    @Override
    public ValueSource parse(FunctionQParser fp) throws SyntaxError {
@@ -43,18 +32,17 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
          );
       }
 
-      SolrParams params = fp.getParams();
-
+      ParamSource params = new ParamSource(fp.getParams());
 
       val queryParameters = TraveltimeQueryParameters.fromStrings(
           req.getSchema(),
-          getParam(params, TraveltimeQueryParameters.FIELD),
-          getParam(params, TraveltimeQueryParameters.ORIGIN),
-          getParam(params, TraveltimeQueryParameters.LIMIT),
-          getParam(params, TraveltimeQueryParameters.MODE),
-          getParam(params, TraveltimeQueryParameters.COUNTRY)
+          params.getParam(TraveltimeQueryParameters.FIELD),
+          params.getParam(TraveltimeQueryParameters.ORIGIN),
+          params.getParam(TraveltimeQueryParameters.LIMIT),
+          params.getParam(TraveltimeQueryParameters.MODE),
+          params.getParam(TraveltimeQueryParameters.COUNTRY)
       );
 
-      return new TraveltimeValueSource(queryParameters, cache.getOrFresh(queryParameters));
+      return new TraveltimeValueSource<>(queryParameters, cache.getOrFresh(queryParameters));
    }
 }

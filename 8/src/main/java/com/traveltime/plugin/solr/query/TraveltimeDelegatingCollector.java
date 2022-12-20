@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TraveltimeDelegatingCollector extends DelegatingCollector {
+public class TraveltimeDelegatingCollector<Params extends QueryParams> extends DelegatingCollector {
    private final LeafReaderContext[] contexts;
    private final int[] contextBaseStart;
    private final int[] contextBaseEnd;
@@ -32,17 +32,17 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
    private final int maxDoc;
    private final Int2FloatOpenHashMap score;
    private final FixedBitSet collectedGlobalDocs;
-   private final TraveltimeQueryParameters params;
+   private final Params params;
    private final float scoreWeight;
    private final Int2ObjectOpenHashMap<Coordinates> globalDoc2Coords;
-   private final Fetcher<TraveltimeQueryParameters> fetcher;
-   private final RequestCache<TraveltimeQueryParameters> cache;
+   private final Fetcher<Params> fetcher;
+   private final RequestCache<Params> cache;
 
    private Object2IntOpenHashMap<Coordinates> pointToTime;
    private SortedNumericDocValues coords;
 
 
-   public TraveltimeDelegatingCollector(int maxDoc, int segments, TraveltimeQueryParameters params, float scoreWeight, Fetcher<TraveltimeQueryParameters> fetcher, RequestCache<TraveltimeQueryParameters> cache) {
+   public TraveltimeDelegatingCollector(int maxDoc, int segments, Params params, float scoreWeight, Fetcher<Params> fetcher, RequestCache<Params> cache) {
       this.maxDoc = maxDoc;
       this.contexts = new LeafReaderContext[segments];
       this.contextBaseStart = new int[segments];
@@ -86,7 +86,7 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
          cachedResults = new UnprotectedTimes();
       }
 
-      val nonCachedSet = cachedResults.nonCached(params.getLimit(), coords);
+      val nonCachedSet = cachedResults.nonCached(params.getTravelTime(), coords);
 
       ArrayList<Coordinates> destinations = new ArrayList<>(nonCachedSet);
 
@@ -97,9 +97,9 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
          times = fetcher.getTimes(params, destinations);
       }
 
-      cachedResults.putAll(params.getLimit(), destinations, times);
+      cachedResults.putAll(params.getTravelTime(), destinations, times);
 
-      return cachedResults.mapToTimes(params.getLimit(), coords);
+      return cachedResults.mapToTimes(params.getTravelTime(), coords);
    }
 
    @Override
@@ -148,8 +148,8 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
 
       @Override
       public float score() {
-         int limit = params.getLimit();
-         int time = pointToTime.getOrDefault(globalDoc2Coords.get(docID()), params.getLimit() + 1);
+         int limit = params.getTravelTime();
+         int time = pointToTime.getOrDefault(globalDoc2Coords.get(docID()), params.getTravelTime() + 1);
          float ttScore = (float) (limit - time + 1) / (limit + 1);
          return (1f - scoreWeight) * score.get(docID()) + scoreWeight * ttScore;
       }

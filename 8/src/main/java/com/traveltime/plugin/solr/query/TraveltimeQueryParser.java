@@ -8,8 +8,6 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.QParser;
 import org.apache.solr.search.SyntaxError;
 
-import static com.traveltime.plugin.solr.util.Util.PARAM_PREFIX;
-
 public class TraveltimeQueryParser extends QParser {
    private static final String WEIGHT = "weight";
 
@@ -22,26 +20,12 @@ public class TraveltimeQueryParser extends QParser {
       this.cacheName = cacheName;
    }
 
-   private String getBestParam(String name) throws SyntaxError {
-      String param;
-      if (localParams != null) {
-         param = localParams.get(name);
-         if (param != null) return param;
-         param = localParams.get(PARAM_PREFIX + name);
-         if (param != null) return param;
-      }
-      param = params.get(PARAM_PREFIX + name);
-      if (param != null) return param;
-      param = params.get(name);
-      if (param != null) return param;
-      throw new SyntaxError("missing " + name + " parameter for TravelTime request");
-   }
-
    @Override
-   public TraveltimeSearchQuery parse() throws SyntaxError {
+   public TraveltimeSearchQuery<TraveltimeQueryParameters> parse() throws SyntaxError {
+      ParamSource paramSource = new ParamSource(localParams, params);
       float weight;
       try {
-         weight = Float.parseFloat(getBestParam(WEIGHT));
+         weight = Float.parseFloat(paramSource.getParam(WEIGHT));
       } catch (SyntaxError ignored) {
          weight = 0f;
       } catch (NumberFormatException e) {
@@ -53,13 +37,13 @@ public class TraveltimeQueryParser extends QParser {
 
       val params = TraveltimeQueryParameters.fromStrings(
           req.getSchema(),
-          getBestParam(TraveltimeQueryParameters.FIELD),
-          getBestParam(TraveltimeQueryParameters.ORIGIN),
-          getBestParam(TraveltimeQueryParameters.LIMIT),
-          getBestParam(TraveltimeQueryParameters.MODE),
-          getBestParam(TraveltimeQueryParameters.COUNTRY)
+          paramSource.getParam(TraveltimeQueryParameters.FIELD),
+          paramSource.getParam(TraveltimeQueryParameters.ORIGIN),
+          paramSource.getParam(TraveltimeQueryParameters.LIMIT),
+          paramSource.getParam(TraveltimeQueryParameters.MODE),
+          paramSource.getParam(TraveltimeQueryParameters.COUNTRY)
       );
-      return new TraveltimeSearchQuery(params, weight, fetcher, cacheName);
+      return new TraveltimeSearchQuery<>(params, weight, fetcher, cacheName);
    }
 
 }

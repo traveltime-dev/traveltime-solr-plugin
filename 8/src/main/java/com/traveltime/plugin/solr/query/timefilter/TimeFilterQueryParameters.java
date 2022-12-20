@@ -1,6 +1,7 @@
 package com.traveltime.plugin.solr.query.timefilter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.traveltime.plugin.solr.query.QueryParams;
 import com.traveltime.sdk.dto.common.Coordinates;
 import com.traveltime.sdk.dto.common.FullRange;
 import com.traveltime.sdk.dto.common.Location;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Data
-public class TimeFilterQueryParameters {
+public class TimeFilterQueryParameters implements QueryParams {
     @With private final String field;
     private final Location location;
     private final Instant time;

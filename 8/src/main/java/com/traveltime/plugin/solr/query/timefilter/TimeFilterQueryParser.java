@@ -1,20 +1,22 @@
 package com.traveltime.plugin.solr.query.timefilter;
 
+import com.traveltime.plugin.solr.fetcher.Fetcher;
 import com.traveltime.plugin.solr.fetcher.JsonFetcher;
-import com.traveltime.plugin.solr.util.Util;
+import com.traveltime.plugin.solr.query.ParamSource;
+import com.traveltime.plugin.solr.query.TraveltimeSearchQuery;
 import lombok.val;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.QParser;
 import org.apache.solr.search.SyntaxError;
 
-import java.util.Optional;
-
 public class TimeFilterQueryParser extends QParser {
    private static final String WEIGHT = "weight";
 
-   private final JsonFetcher fetcher;
+   private final Fetcher<TimeFilterQueryParameters> fetcher;
    private final String cacheName;
+
+
 
    public TimeFilterQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, JsonFetcher fetcher, String cacheName) {
       super(qstr, localParams, params, req);
@@ -22,22 +24,12 @@ public class TimeFilterQueryParser extends QParser {
       this.cacheName = cacheName;
    }
 
-   private String getBestParam(String name) throws SyntaxError {
-      String param = Util.getBestParam(localParams, params, name);
-      Util.assertPresent(param, name);
-      return param;
-   }
-
-   private Optional<String> getOptionalBestParam(String name) {
-      String param = Util.getBestParam(localParams, params, name);
-      return Optional.ofNullable(param);
-   }
-
    @Override
-   public TimeFilterSearchQuery parse() throws SyntaxError {
+   public TraveltimeSearchQuery<TimeFilterQueryParameters> parse() throws SyntaxError {
+      ParamSource paramSource = new ParamSource(localParams, params);
       float weight;
       try {
-         weight = Float.parseFloat(getBestParam(WEIGHT));
+         weight = Float.parseFloat(paramSource.getParam(WEIGHT));
       } catch (SyntaxError ignored) {
          weight = 0f;
       } catch (NumberFormatException e) {
@@ -47,11 +39,11 @@ public class TimeFilterQueryParser extends QParser {
          throw new SyntaxError("Traveltime weight must be between 0 and 1");
       }
 
-      val arrivalTime = getOptionalBestParam(TimeFilterQueryParameters.ARRIVAL_TIME);
-      val arrivalLocation = getOptionalBestParam(TimeFilterQueryParameters.ARRIVAL_LOCATION);
+      val arrivalTime = paramSource.getOptionalParam(TimeFilterQueryParameters.ARRIVAL_TIME);
+      val arrivalLocation = paramSource.getOptionalParam(TimeFilterQueryParameters.ARRIVAL_LOCATION);
 
-      val departureTime = getOptionalBestParam(TimeFilterQueryParameters.DEPARTURE_TIME);
-      val departureLocation = getOptionalBestParam(TimeFilterQueryParameters.DEPARTURE_LOCATION);
+      val departureTime = paramSource.getOptionalParam(TimeFilterQueryParameters.DEPARTURE_TIME);
+      val departureLocation = paramSource.getOptionalParam(TimeFilterQueryParameters.DEPARTURE_LOCATION);
 
       if(arrivalTime.isPresent() != arrivalLocation.isPresent()) {
          throw new SyntaxError(String.format("Only one of [%s, %s] was defined. Either both must be defined or none.", TimeFilterQueryParameters.ARRIVAL_TIME, TimeFilterQueryParameters.ARRIVAL_LOCATION));
@@ -70,27 +62,27 @@ public class TimeFilterQueryParser extends QParser {
          queryParams = TimeFilterQueryParameters.fromStrings(
                  req.getSchema(),
                  TimeFilterQueryParameters.SearchType.ARRIVAL,
-                 getBestParam(TimeFilterQueryParameters.FIELD),
-                 getBestParam(TimeFilterQueryParameters.ARRIVAL_LOCATION),
-                 getBestParam(TimeFilterQueryParameters.ARRIVAL_TIME),
-                 getBestParam(TimeFilterQueryParameters.TRAVEL_TIME),
-                 getBestParam(TimeFilterQueryParameters.TRANSPORTATION),
-                 getOptionalBestParam(TimeFilterQueryParameters.RANGE)
+                 paramSource.getParam(TimeFilterQueryParameters.FIELD),
+                 paramSource.getParam(TimeFilterQueryParameters.ARRIVAL_LOCATION),
+                 paramSource.getParam(TimeFilterQueryParameters.ARRIVAL_TIME),
+                 paramSource.getParam(TimeFilterQueryParameters.TRAVEL_TIME),
+                 paramSource.getParam(TimeFilterQueryParameters.TRANSPORTATION),
+                 paramSource.getOptionalParam(TimeFilterQueryParameters.RANGE)
          );
       } else {
          queryParams = TimeFilterQueryParameters.fromStrings(
                  req.getSchema(),
                  TimeFilterQueryParameters.SearchType.DEPARTURE,
-                 getBestParam(TimeFilterQueryParameters.FIELD),
-                 getBestParam(TimeFilterQueryParameters.DEPARTURE_LOCATION),
-                 getBestParam(TimeFilterQueryParameters.DEPARTURE_TIME),
-                 getBestParam(TimeFilterQueryParameters.TRAVEL_TIME),
-                 getBestParam(TimeFilterQueryParameters.TRANSPORTATION),
-                 getOptionalBestParam(TimeFilterQueryParameters.RANGE)
+                 paramSource.getParam(TimeFilterQueryParameters.FIELD),
+                 paramSource.getParam(TimeFilterQueryParameters.DEPARTURE_LOCATION),
+                 paramSource.getParam(TimeFilterQueryParameters.DEPARTURE_TIME),
+                 paramSource.getParam(TimeFilterQueryParameters.TRAVEL_TIME),
+                 paramSource.getParam(TimeFilterQueryParameters.TRANSPORTATION),
+                 paramSource.getOptionalParam(TimeFilterQueryParameters.RANGE)
          );
       }
 
-      return new TimeFilterSearchQuery(queryParams, weight, fetcher, cacheName);
+      return new TraveltimeSearchQuery<>(queryParams, weight, fetcher, cacheName);
    }
 
 }
