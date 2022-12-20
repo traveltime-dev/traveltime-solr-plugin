@@ -48,9 +48,6 @@ public class TimeFilterQueryParameters implements QueryParams {
     public static final String TRANSPORTATION = "transportation";
     public static final String RANGE = "range";
 
-    private static final TypeReference<List<Property>> PROPERTY_LIST_TYPE = new TypeReference<List<Property>>() {
-    };
-
     private static <T> T getOrThrow(Either<TravelTimeError, T> either) throws SyntaxError {
         if(either.isLeft()) {
             throw new SyntaxError(either.getLeft().getMessage());
