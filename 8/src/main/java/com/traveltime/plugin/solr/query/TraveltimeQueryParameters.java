@@ -42,28 +42,25 @@ public class TraveltimeQueryParameters implements QueryParams {
       }
    }
 
-   public static TraveltimeQueryParameters fromStrings(
-       IndexSchema schema,
-       String field,
-       String originStr,
-       String limitStr,
-       String modeStr,
-       String countryStr
-       ) throws SyntaxError {
+   public static TraveltimeQueryParameters parse(
+           IndexSchema schema,
+           ParamSource params
+   ) throws SyntaxError {
+      String field = params.getParam(TraveltimeQueryParameters.FIELD);
 
       val fieldType =  schema.getField(field);
       if (!(fieldType.getType() instanceof LatLonPointSpatialField)) {
          throw new SyntaxError("field[" + field + "] is not a LatLonPointSpatialField");
       }
 
-      val origin = Util.toGeoPoint(originStr);
+      val origin = Util.toGeoPoint(params.getParam(TraveltimeQueryParameters.ORIGIN));
 
-      val mode = findByNameOrError("transportation mode", modeStr, Util::findModeByName);
-      val country = findByNameOrError("country", countryStr, Util::findCountryByName);
+      val mode = findByNameOrError("transportation mode", params.getParam(TraveltimeQueryParameters.MODE), Util::findModeByName);
+      val country = findByNameOrError("country", params.getParam(TraveltimeQueryParameters.COUNTRY), Util::findCountryByName);
 
       int limit;
       try {
-         limit = Integer.parseInt(limitStr);
+         limit = Integer.parseInt(params.getParam(TraveltimeQueryParameters.LIMIT));
       } catch (NumberFormatException e) {
          throw new SyntaxError("Couldn't parse traveltime limit as an integer");
       }
@@ -73,5 +70,4 @@ public class TraveltimeQueryParameters implements QueryParams {
 
       return new TraveltimeQueryParameters(field, origin, limit, mode, country);
    }
-
 }

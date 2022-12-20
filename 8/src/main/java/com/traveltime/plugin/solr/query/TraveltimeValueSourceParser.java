@@ -10,7 +10,6 @@ import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
 import org.apache.solr.search.ValueSourceParser;
 
-
 public class TraveltimeValueSourceParser extends ValueSourceParser {
    private String cacheName = RequestCache.NAME;
 
@@ -32,17 +31,7 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
          );
       }
 
-      ParamSource params = new ParamSource(fp.getParams());
-
-      val queryParameters = TraveltimeQueryParameters.fromStrings(
-          req.getSchema(),
-          params.getParam(TraveltimeQueryParameters.FIELD),
-          params.getParam(TraveltimeQueryParameters.ORIGIN),
-          params.getParam(TraveltimeQueryParameters.LIMIT),
-          params.getParam(TraveltimeQueryParameters.MODE),
-          params.getParam(TraveltimeQueryParameters.COUNTRY)
-      );
-
+      val queryParameters = TraveltimeQueryParameters.parse(req.getSchema(), new ParamSource(fp.getParams()));
       return new TraveltimeValueSource<>(queryParameters, cache.getOrFresh(queryParameters));
    }
 }

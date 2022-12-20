@@ -1,6 +1,7 @@
 package com.traveltime.plugin.solr.query.timefilter;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.traveltime.plugin.solr.query.ParamSource;
 import com.traveltime.plugin.solr.query.QueryParams;
 import com.traveltime.sdk.dto.common.Coordinates;
 import com.traveltime.sdk.dto.common.FullRange;
@@ -58,32 +59,42 @@ public class TimeFilterQueryParameters implements QueryParams {
         }
     }
 
-    public static TimeFilterQueryParameters fromStrings(
+    public static TimeFilterQueryParameters parse(
             IndexSchema schema,
-            SearchType searchType,
-            String field,
-            String locationStr,
-            String timeStr,
-            String travelTimeStr,
-            String transportationStr,
-            Optional<String> rangeStr
+            ParamSource paramSource
     ) throws SyntaxError {
 
-        val fieldType = schema.getField(field);
-        if (!(fieldType.getType() instanceof LatLonPointSpatialField)) {
+        String field = paramSource.getParam(TimeFilterQueryParameters.FIELD);
+        if (!(schema.getField(field).getType() instanceof LatLonPointSpatialField)) {
             throw new SyntaxError("field[" + field + "] is not a LatLonPointSpatialField");
         }
 
-        val locationCoords = JsonUtils.fromJson(locationStr, Coordinates.class);
-        val time = Instant.parse(timeStr);
-        val transportation = JsonUtils.fromJson(transportationStr, Transportation.class);
-        val range = rangeStr.map(r ->  JsonUtils.fromJson(r, FullRange.class));
+        val arrivalTime = paramSource.getOptionalParam(TimeFilterQueryParameters.ARRIVAL_TIME);
+        val arrivalLocation = paramSource.getOptionalParam(TimeFilterQueryParameters.ARRIVAL_LOCATION);
 
-        val location = new Location("location", getOrThrow(locationCoords));
+        val departureTime = paramSource.getOptionalParam(TimeFilterQueryParameters.DEPARTURE_TIME);
+        val departureLocation = paramSource.getOptionalParam(TimeFilterQueryParameters.DEPARTURE_LOCATION);
+
+        if(arrivalTime.isPresent() != arrivalLocation.isPresent()) {
+            throw new SyntaxError(String.format("Only one of [%s, %s] was defined. Either both must be defined or none.", TimeFilterQueryParameters.ARRIVAL_TIME, TimeFilterQueryParameters.ARRIVAL_LOCATION));
+        }
+
+        if(departureTime.isPresent() != departureLocation.isPresent()) {
+            throw new SyntaxError(String.format("Only one of [%s, %s] was defined. Either both must be defined or none.", TimeFilterQueryParameters.DEPARTURE_TIME, TimeFilterQueryParameters.DEPARTURE_LOCATION));
+        }
+
+        if(arrivalTime.isPresent() == departureTime.isPresent()) {
+            throw new SyntaxError("You must provide exactly one of the parameter sets of arrival time/location or departure time/location, but not both or neither.");
+        }
+
+        val transportation = JsonUtils.fromJson(paramSource.getParam(TimeFilterQueryParameters.TRANSPORTATION), Transportation.class);
+
+        val range = paramSource.getOptionalParam(TimeFilterQueryParameters.RANGE).map(r ->  JsonUtils.fromJson(r, FullRange.class));
+        Optional<FullRange> rangeOptional = range.isPresent() ? Optional.of(getOrThrow(range.get())) : Optional.empty();
 
         int travelTime;
         try {
-            travelTime = Integer.parseInt(travelTimeStr);
+            travelTime = Integer.parseInt(paramSource.getParam(TimeFilterQueryParameters.TRAVEL_TIME));
         } catch (NumberFormatException e) {
             throw new SyntaxError("Couldn't parse traveltime limit as an integer");
         }
@@ -91,18 +102,38 @@ public class TimeFilterQueryParameters implements QueryParams {
             throw new SyntaxError("traveltime limit must be > 0");
         }
 
-        Optional<FullRange> rangeOptional = range.isPresent() ? Optional.of(getOrThrow(range.get())) : Optional.empty();
+        TimeFilterQueryParameters queryParams;
+        if (arrivalTime.isPresent()) {
+            val locationCoords = JsonUtils.fromJson(paramSource.getParam(TimeFilterQueryParameters.ARRIVAL_LOCATION), Coordinates.class);
+            val time = Instant.parse(paramSource.getParam(TimeFilterQueryParameters.ARRIVAL_TIME));
 
+            val location = new Location("location", getOrThrow(locationCoords));
 
-        return new TimeFilterQueryParameters(
-                field,
-                location,
-                time,
-                travelTime,
-                getOrThrow(transportation),
-                rangeOptional,
-                searchType
-        );
+            queryParams = new TimeFilterQueryParameters(
+                    field,
+                    location,
+                    time,
+                    travelTime,
+                    getOrThrow(transportation),
+                    rangeOptional,
+                    SearchType.ARRIVAL
+            );
+        } else {
+            val locationCoords = JsonUtils.fromJson(paramSource.getParam(TimeFilterQueryParameters.DEPARTURE_LOCATION), Coordinates.class);
+            val time = Instant.parse(paramSource.getParam(TimeFilterQueryParameters.DEPARTURE_TIME));
+
+            val location = new Location("location", getOrThrow(locationCoords));
+
+            queryParams = new TimeFilterQueryParameters(
+                    field,
+                    location,
+                    time,
+                    travelTime,
+                    getOrThrow(transportation),
+                    rangeOptional,
+                    SearchType.DEPARTURE
+            );
+        }
+        return queryParams;
     }
-
 }
