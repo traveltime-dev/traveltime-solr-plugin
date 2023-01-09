@@ -31,7 +31,7 @@ public class TraveltimeSearchQuery extends ExtendedQueryBase implements PostFilt
 
    @Override
    public DelegatingCollector getFilterCollector(IndexSearcher indexSearcher) {
-      SolrIndexSearcher searcher = (SolrIndexSearcher)indexSearcher;
+      SolrIndexSearcher searcher = (SolrIndexSearcher) indexSearcher;
       RequestCache cache = (RequestCache) searcher.getCache(cacheName);
       int maxDoc = searcher.maxDoc();
       int leafCount = searcher.getTopReaderContext().leaves().size();

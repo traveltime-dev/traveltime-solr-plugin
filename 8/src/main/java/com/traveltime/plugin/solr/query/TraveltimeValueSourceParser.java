@@ -17,17 +17,18 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
    public void init(NamedList args) {
       super.init(args);
       Object cache = args.get("cache");
-      if(cache != null) cacheName = cache.toString();
+      if (cache != null) cacheName = cache.toString();
    }
 
    @Override
    public ValueSource parse(FunctionQParser fp) throws SyntaxError {
       SolrQueryRequest req = fp.getReq();
-      RequestCache<TraveltimeQueryParameters> cache = (RequestCache<TraveltimeQueryParameters>) req.getSearcher().getCache(cacheName);
+      RequestCache<TraveltimeQueryParameters> cache = (RequestCache<TraveltimeQueryParameters>) req.getSearcher()
+                                                                                                   .getCache(cacheName);
       if (cache == null) {
          throw new SolrException(
-             SolrException.ErrorCode.BAD_REQUEST,
-             "No request cache configured."
+               SolrException.ErrorCode.BAD_REQUEST,
+               "No request cache configured."
          );
       }
 

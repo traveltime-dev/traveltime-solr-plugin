@@ -10,6 +10,7 @@ import org.apache.lucene.index.SortedNumericDocValues;
 import org.apache.lucene.queries.function.FunctionValues;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.lucene.queries.function.docvalues.IntDocValues;
+
 import java.io.IOException;
 import java.util.Map;
 
@@ -29,7 +30,7 @@ public class TraveltimeValueSource extends ValueSource {
          public int intVal(int doc) {
             int time = -1;
             longs.setDocument(doc);
-            if (longs.count()!=0)
+            if (longs.count() != 0)
                time = cache.get(Util.decode(longs.valueAt(1)));
             return time;
          }

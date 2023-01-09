@@ -101,11 +101,11 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
          times = new ArrayList<>();
       } else {
          times = fetcher.getTimes(
-             params.getOrigin(),
-             destinations,
-             params.getLimit(),
-             params.getMode(),
-             params.getCountry()
+               params.getOrigin(),
+               destinations,
+               params.getLimit(),
+               params.getMode(),
+               params.getCountry()
          );
       }
 

@@ -30,9 +30,9 @@ public class ProtoFetcher implements Fetcher<TraveltimeQueryParameters> {
          val ioerr = (IOError) left;
          log.warn(ioerr.getMessage());
          log.warn(
-                 Arrays.stream(ioerr.getCause().getStackTrace())
-                         .map(StackTraceElement::toString)
-                         .reduce("", (a, b) -> a + "\n\t" + b)
+               Arrays.stream(ioerr.getCause().getStackTrace())
+                     .map(StackTraceElement::toString)
+                     .reduce("", (a, b) -> a + "\n\t" + b)
          );
       } else if (left instanceof ResponseError) {
          val error = (ResponseError) left;
@@ -43,7 +43,7 @@ public class ProtoFetcher implements Fetcher<TraveltimeQueryParameters> {
    public ProtoFetcher(URI uri, String id, String key) {
       val auth = TravelTimeCredentials.builder().appId(id).apiKey(key).build();
       val builder = TravelTimeSDK.builder().credentials(auth);
-      if(uri != null) {
+      if (uri != null) {
          builder.baseProtoUri(uri);
       }
       api = builder.build();
@@ -51,31 +51,30 @@ public class ProtoFetcher implements Fetcher<TraveltimeQueryParameters> {
 
    @Override
    public List<Integer> getTimes(TraveltimeQueryParameters params, ArrayList<Coordinates> destinations) {
-      val fastProto =
-              TimeFilterFastProtoRequest
-                      .builder()
-                      .oneToMany(
-                              OneToMany
-                                      .builder()
-                                      .country(params.getCountry())
-                                      .transportation(params.getMode())
-                                      .originCoordinate(params.getOrigin())
-                                      .destinationCoordinates(destinations)
-                                      .travelTime(params.getLimit())
-                                      .build()
-                      )
-                      .build();
+      val fastProto = TimeFilterFastProtoRequest
+            .builder()
+            .oneToMany(
+                  OneToMany
+                        .builder()
+                        .country(params.getCountry())
+                        .transportation(params.getMode())
+                        .originCoordinate(params.getOrigin())
+                        .destinationCoordinates(destinations)
+                        .travelTime(params.getLimit())
+                        .build()
+            )
+            .build();
 
 
       log.info(String.format("Fetching %d destinations", destinations.size()));
       val result = Util.time(log, () -> api.sendProtoBatched(fastProto));
 
       return result.fold(
-              err -> {
-                 logError(err);
-                 throw new RuntimeException(err.getMessage());
-              },
-              TimeFilterFastProtoResponse::getTravelTimes
+            err -> {
+               logError(err);
+               throw new RuntimeException(err.getMessage());
+            },
+            TimeFilterFastProtoResponse::getTravelTimes
       );
    }
 

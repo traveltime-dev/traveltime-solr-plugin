@@ -133,11 +133,11 @@ public class TraveltimeDelegatingCollector<Params extends QueryParams> extends D
       }
    }
 
-   private class ForwardingScorer extends Scorable{
+   private class ForwardingScorer extends Scorable {
 
       private final DocIdSetIterator backingIterator;
 
-      private ForwardingScorer(DocIdSetIterator backingIterator){
+      private ForwardingScorer(DocIdSetIterator backingIterator) {
          this.backingIterator = backingIterator;
       }
 

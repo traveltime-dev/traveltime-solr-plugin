@@ -1,7 +1,6 @@
 package com.traveltime.plugin.solr.query.timefilter;
 
 import com.traveltime.plugin.solr.fetcher.Fetcher;
-import com.traveltime.plugin.solr.fetcher.JsonFetcher;
 import com.traveltime.plugin.solr.query.ParamSource;
 import com.traveltime.plugin.solr.query.TraveltimeSearchQuery;
 import lombok.val;
@@ -33,7 +32,7 @@ public class TimeFilterQueryParser extends QParser {
       } catch (NumberFormatException e) {
          throw new SyntaxError("Couldn't parse traveltime weight as a float");
       }
-      if(weight < 0 || weight > 1) {
+      if (weight < 0 || weight > 1) {
          throw new SyntaxError("Traveltime weight must be between 0 and 1");
       }
 

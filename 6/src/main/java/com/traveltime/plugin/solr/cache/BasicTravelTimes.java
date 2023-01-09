@@ -21,10 +21,10 @@ public class BasicTravelTimes extends TravelTimes {
       try {
          val nonCachedSet = new ObjectOpenHashSet<Coordinates>();
          coords.forEach(coord -> {
-                if (!coordsToTimes.containsKey(coord)) {
-                   nonCachedSet.add(coord);
-                }
-             }
+                           if (!coordsToTimes.containsKey(coord)) {
+                              nonCachedSet.add(coord);
+                           }
+                        }
          );
          return nonCachedSet;
       } finally {

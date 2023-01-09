@@ -46,17 +46,17 @@ public class TraveltimeQueryParser extends QParser {
       } catch (NumberFormatException e) {
          throw new SyntaxError("Couldn't parse traveltime weight as a float");
       }
-      if(weight < 0 || weight > 1) {
+      if (weight < 0 || weight > 1) {
          throw new SyntaxError("Traveltime weight must be between 0 and 1");
       }
 
       val params = TraveltimeQueryParameters.fromStrings(
-          req.getSchema(),
-          getBestParam(TraveltimeQueryParameters.FIELD),
-          getBestParam(TraveltimeQueryParameters.ORIGIN),
-          getBestParam(TraveltimeQueryParameters.LIMIT),
-          getBestParam(TraveltimeQueryParameters.MODE),
-          getBestParam(TraveltimeQueryParameters.COUNTRY)
+            req.getSchema(),
+            getBestParam(TraveltimeQueryParameters.FIELD),
+            getBestParam(TraveltimeQueryParameters.ORIGIN),
+            getBestParam(TraveltimeQueryParameters.LIMIT),
+            getBestParam(TraveltimeQueryParameters.MODE),
+            getBestParam(TraveltimeQueryParameters.COUNTRY)
       );
       return new TraveltimeSearchQuery(params, weight, fetcher, cacheName);
    }

@@ -4,12 +4,12 @@ import com.traveltime.sdk.dto.common.Coordinates;
 import com.traveltime.sdk.dto.requests.proto.Country;
 import com.traveltime.sdk.dto.requests.proto.Transportation;
 import lombok.val;
-import org.slf4j.Logger;
 import org.apache.lucene.geo.GeoEncodingUtils;
 import org.apache.lucene.geo.GeoUtils;
 import org.apache.solr.common.SolrException;
 import org.locationtech.spatial4j.context.SpatialContext;
 import org.locationtech.spatial4j.io.GeohashUtils;
+import org.slf4j.Logger;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -31,25 +31,29 @@ public final class Util {
       Double lat = null;
       Double lng = null;
 
-      if(coords.length == 2) {
+      if (coords.length == 2) {
          try {
             lat = Double.parseDouble(coords[0]);
             lng = Double.parseDouble(coords[1]);
-         } catch (NumberFormatException ignored) {}
+         } catch (NumberFormatException ignored) {
+         }
       } else {
          try {
             val point = GeohashUtils.decode(str, SpatialContext.GEO);
             lat = point.getY();
             lng = point.getX();
-         } catch (ArrayIndexOutOfBoundsException ignored) {}
+         } catch (ArrayIndexOutOfBoundsException ignored) {
+         }
       }
 
-      if(lat != null && lng != null) {
+      if (lat != null && lng != null) {
          GeoUtils.checkLatitude(lat);
          GeoUtils.checkLongitude(lat);
          return new Coordinates(lat, lng);
       } else {
-         throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Could not decode string" + str + " as coordinates");
+         throw new SolrException(SolrException.ErrorCode.BAD_REQUEST,
+                                 "Could not decode string" + str + " as coordinates"
+         );
       }
    }
 

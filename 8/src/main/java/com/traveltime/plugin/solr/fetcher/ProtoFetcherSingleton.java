@@ -9,9 +9,9 @@ public enum ProtoFetcherSingleton {
    private final Object[] lock = new Object[0];
 
    public void init(URI uri, String id, String key) {
-      if(underlying != null) return;
+      if (underlying != null) return;
       synchronized (lock) {
-         if(underlying != null) return;
+         if (underlying != null) return;
          underlying = new ProtoFetcher(uri, id, key);
       }
    }

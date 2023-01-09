@@ -20,14 +20,14 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
    public void init(NamedList args) {
       super.init(args);
       Object cache = args.get("cache");
-      if(cache != null) cacheName = cache.toString();
+      if (cache != null) cacheName = cache.toString();
    }
 
    private String getParam(SolrParams params, String name) throws SyntaxError {
       String param = params.get(PARAM_PREFIX + name);
-      if(param != null) return param;
+      if (param != null) return param;
       param = params.get(name);
-      if(param != null) return param;
+      if (param != null) return param;
       throw new SyntaxError("missing " + name + " parameter for TravelTime value source");
    }
 
@@ -38,8 +38,8 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
       RequestCache cache = (RequestCache) req.getSearcher().getCache(cacheName);
       if (cache == null) {
          throw new SolrException(
-             SolrException.ErrorCode.BAD_REQUEST,
-             "No request cache configured."
+               SolrException.ErrorCode.BAD_REQUEST,
+               "No request cache configured."
          );
       }
 
@@ -47,12 +47,12 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
 
 
       val queryParameters = TraveltimeQueryParameters.fromStrings(
-          req.getSchema(),
-          getParam(params, TraveltimeQueryParameters.FIELD),
-          getParam(params, TraveltimeQueryParameters.ORIGIN),
-          getParam(params, TraveltimeQueryParameters.LIMIT),
-          getParam(params, TraveltimeQueryParameters.MODE),
-          getParam(params, TraveltimeQueryParameters.COUNTRY)
+            req.getSchema(),
+            getParam(params, TraveltimeQueryParameters.FIELD),
+            getParam(params, TraveltimeQueryParameters.ORIGIN),
+            getParam(params, TraveltimeQueryParameters.LIMIT),
+            getParam(params, TraveltimeQueryParameters.MODE),
+            getParam(params, TraveltimeQueryParameters.COUNTRY)
       );
 
       return new TraveltimeValueSource(queryParameters, cache.getOrFresh(queryParameters));
