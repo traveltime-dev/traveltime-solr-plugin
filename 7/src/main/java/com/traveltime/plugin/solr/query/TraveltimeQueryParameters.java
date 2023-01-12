@@ -19,8 +19,10 @@ public class TraveltimeQueryParameters {
    private final String field;
    private final Coordinates origin;
    private final int limit;
-   @With private final Transportation mode;
-   @With private final Country country;
+   @With
+   private final Transportation mode;
+   @With
+   private final Country country;
 
    public static final String FIELD = "field";
    public static final String ORIGIN = "origin";
@@ -38,15 +40,15 @@ public class TraveltimeQueryParameters {
    }
 
    public static TraveltimeQueryParameters fromStrings(
-       IndexSchema schema,
-       String field,
-       String originStr,
-       String limitStr,
-       String modeStr,
-       String countryStr
-       ) throws SyntaxError {
+         IndexSchema schema,
+         String field,
+         String originStr,
+         String limitStr,
+         String modeStr,
+         String countryStr
+   ) throws SyntaxError {
 
-      val fieldType =  schema.getField(field);
+      val fieldType = schema.getField(field);
       if (!(fieldType.getType() instanceof LatLonPointSpatialField)) {
          throw new SyntaxError("field[" + field + "] is not a LatLonPointSpatialField");
       }

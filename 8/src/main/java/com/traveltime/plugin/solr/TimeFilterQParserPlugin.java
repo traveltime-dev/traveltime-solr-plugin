@@ -20,25 +20,31 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
    @Override
    public void init(NamedList args) {
       Object cache = args.get("cache");
-      if(cache != null) cacheName = cache.toString();
+      if (cache != null) cacheName = cache.toString();
 
       Object uriVal = args.get("api_uri");
       URI uri = null;
-      if(uriVal != null) uri = URI.create(uriVal.toString());
+      if (uriVal != null) uri = URI.create(uriVal.toString());
 
       String appId = args.get("app_id").toString();
       String apiKey = args.get("api_key").toString();
       int locationLimit =
-              Optional.ofNullable(args.get("location_limit"))
-                      .map(x -> Integer.parseInt(x.toString()))
-                      .orElse(DEFAULT_LOCATION_SIZE_LIMIT);
+            Optional.ofNullable(args.get("location_limit"))
+                    .map(x -> Integer.parseInt(x.toString()))
+                    .orElse(DEFAULT_LOCATION_SIZE_LIMIT);
 
       JsonFetcherSingleton.INSTANCE.init(uri, appId, apiKey, locationLimit);
    }
 
    @Override
    public QParser createParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req) {
-      return new TimeFilterQueryParser(qstr, localParams, params, req, JsonFetcherSingleton.INSTANCE.getFetcher(), cacheName);
+      return new TimeFilterQueryParser(qstr,
+                                       localParams,
+                                       params,
+                                       req,
+                                       JsonFetcherSingleton.INSTANCE.getFetcher(),
+                                       cacheName
+      );
    }
 
 }

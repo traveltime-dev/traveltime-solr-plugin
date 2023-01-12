@@ -17,11 +17,11 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
    @Override
    public void init(NamedList args) {
       Object cache = args.get("cache");
-      if(cache != null) cacheName = cache.toString();
+      if (cache != null) cacheName = cache.toString();
 
       Object uriVal = args.get("api_uri");
       URI uri = null;
-      if(uriVal != null) uri = URI.create(uriVal.toString());
+      if (uriVal != null) uri = URI.create(uriVal.toString());
 
       String appId = args.get("app_id").toString();
       String apiKey = args.get("api_key").toString();
@@ -30,7 +30,13 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
 
    @Override
    public QParser createParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req) {
-      return new TraveltimeQueryParser(qstr, localParams, params, req, FetcherSingleton.INSTANCE.getFetcher(), cacheName);
+      return new TraveltimeQueryParser(qstr,
+                                       localParams,
+                                       params,
+                                       req,
+                                       FetcherSingleton.INSTANCE.getFetcher(),
+                                       cacheName
+      );
    }
 
 }

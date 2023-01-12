@@ -20,6 +20,7 @@ import org.apache.lucene.search.Scorable;
 import org.apache.lucene.util.BitSetIterator;
 import org.apache.lucene.util.FixedBitSet;
 import org.apache.solr.search.DelegatingCollector;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -95,11 +96,11 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
          times = new ArrayList<>();
       } else {
          times = fetcher.getTimes(
-                 params.getOrigin(),
-                 destinations,
-                 params.getLimit(),
-                 params.getMode(),
-                 params.getCountry()
+               params.getOrigin(),
+               destinations,
+               params.getLimit(),
+               params.getMode(),
+               params.getCountry()
          );
       }
 
@@ -139,11 +140,11 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
       }
    }
 
-   private class ForwardingScorer extends Scorable{
+   private class ForwardingScorer extends Scorable {
 
       private final DocIdSetIterator backingIterator;
 
-      private ForwardingScorer(DocIdSetIterator backingIterator){
+      private ForwardingScorer(DocIdSetIterator backingIterator) {
          this.backingIterator = backingIterator;
       }
 

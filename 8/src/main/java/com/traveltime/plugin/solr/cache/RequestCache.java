@@ -1,6 +1,5 @@
 package com.traveltime.plugin.solr.cache;
 
-import com.traveltime.plugin.solr.query.TraveltimeQueryParameters;
 import org.apache.solr.search.CacheRegenerator;
 import org.apache.solr.search.FastLRUCache;
 import org.apache.solr.search.NoOpRegenerator;

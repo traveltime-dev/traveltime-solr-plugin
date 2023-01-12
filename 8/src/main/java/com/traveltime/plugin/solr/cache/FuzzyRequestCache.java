@@ -15,7 +15,7 @@ public class FuzzyRequestCache extends RequestCache<TraveltimeQueryParameters> {
       return super.init(args, persistence, regenerator);
    }
 
-      @Override
+   @Override
    public TravelTimes getOrFresh(TraveltimeQueryParameters key) {
       key = new TraveltimeQueryParameters(null, key.getOrigin(), 0, key.getMode(), null);
       TravelTimes result = get(key);

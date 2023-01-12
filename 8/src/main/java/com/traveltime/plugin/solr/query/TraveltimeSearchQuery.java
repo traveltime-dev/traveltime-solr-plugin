@@ -1,7 +1,7 @@
 package com.traveltime.plugin.solr.query;
 
-import com.traveltime.plugin.solr.fetcher.Fetcher;
 import com.traveltime.plugin.solr.cache.RequestCache;
+import com.traveltime.plugin.solr.fetcher.Fetcher;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.apache.lucene.search.IndexSearcher;
@@ -25,7 +25,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
 
    @Override
    public DelegatingCollector getFilterCollector(IndexSearcher indexSearcher) {
-      SolrIndexSearcher searcher = (SolrIndexSearcher)indexSearcher;
+      SolrIndexSearcher searcher = (SolrIndexSearcher) indexSearcher;
       RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
       int maxDoc = searcher.maxDoc();
       int leafCount = searcher.getTopReaderContext().leaves().size();

@@ -18,21 +18,24 @@ public class TimeFilterValueSourceParser extends ValueSourceParser {
    public void init(NamedList args) {
       super.init(args);
       Object cache = args.get("cache");
-      if(cache != null) cacheName = cache.toString();
+      if (cache != null) cacheName = cache.toString();
    }
 
    @Override
    public ValueSource parse(FunctionQParser fp) throws SyntaxError {
       SolrQueryRequest req = fp.getReq();
-      RequestCache<TimeFilterQueryParameters> cache = (RequestCache<TimeFilterQueryParameters>) req.getSearcher().getCache(cacheName);
+      RequestCache<TimeFilterQueryParameters> cache = (RequestCache<TimeFilterQueryParameters>) req.getSearcher()
+                                                                                                   .getCache(cacheName);
       if (cache == null) {
          throw new SolrException(
-             SolrException.ErrorCode.BAD_REQUEST,
-             "No request cache configured."
+               SolrException.ErrorCode.BAD_REQUEST,
+               "No request cache configured."
          );
       }
 
-      TimeFilterQueryParameters queryParams = TimeFilterQueryParameters.parse(req.getSchema(), new ParamSource(fp.getParams()));
+      TimeFilterQueryParameters queryParams = TimeFilterQueryParameters.parse(req.getSchema(),
+                                                                              new ParamSource(fp.getParams())
+      );
       return new TraveltimeValueSource<>(queryParams, cache.getOrFresh(queryParams));
    }
 }

@@ -19,8 +19,10 @@ public class TraveltimeQueryParameters implements QueryParams {
    private final String field;
    private final Coordinates origin;
    private final int limit;
-   @With private final Transportation mode;
-   @With private final Country country;
+   @With
+   private final Transportation mode;
+   @With
+   private final Country country;
 
    @Override
    public int getTravelTime() {
@@ -43,20 +45,26 @@ public class TraveltimeQueryParameters implements QueryParams {
    }
 
    public static TraveltimeQueryParameters parse(
-           IndexSchema schema,
-           ParamSource params
+         IndexSchema schema,
+         ParamSource params
    ) throws SyntaxError {
       String field = params.getParam(TraveltimeQueryParameters.FIELD);
 
-      val fieldType =  schema.getField(field);
+      val fieldType = schema.getField(field);
       if (!(fieldType.getType() instanceof LatLonPointSpatialField)) {
          throw new SyntaxError("field[" + field + "] is not a LatLonPointSpatialField");
       }
 
       val origin = Util.toGeoPoint(params.getParam(TraveltimeQueryParameters.ORIGIN));
 
-      val mode = findByNameOrError("transportation mode", params.getParam(TraveltimeQueryParameters.MODE), Util::findModeByName);
-      val country = findByNameOrError("country", params.getParam(TraveltimeQueryParameters.COUNTRY), Util::findCountryByName);
+      val mode = findByNameOrError("transportation mode",
+                                   params.getParam(TraveltimeQueryParameters.MODE),
+                                   Util::findModeByName
+      );
+      val country = findByNameOrError("country",
+                                      params.getParam(TraveltimeQueryParameters.COUNTRY),
+                                      Util::findCountryByName
+      );
 
       int limit;
       try {

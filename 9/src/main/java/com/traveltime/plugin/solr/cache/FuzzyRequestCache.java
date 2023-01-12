@@ -10,12 +10,12 @@ public class FuzzyRequestCache extends RequestCache {
    private Map<String, String> args;
 
    @Override
-   public Object init(Map args, Object persistence, CacheRegenerator regenerator) {
+   public Object init(Map<String, String> args, Object persistence, CacheRegenerator regenerator) {
       this.args = args;
       return super.init(args, persistence, regenerator);
    }
 
-      @Override
+   @Override
    public TravelTimes getOrFresh(TraveltimeQueryParameters key) {
       key = new TraveltimeQueryParameters(null, key.getOrigin(), 0, key.getMode(), null);
       TravelTimes result = get(key);

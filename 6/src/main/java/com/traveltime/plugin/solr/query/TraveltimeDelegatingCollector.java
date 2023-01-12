@@ -78,7 +78,7 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
    public void collect(int contextDoc) throws IOException {
 
       coords.setDocument(contextDoc);
-      if (coords.count()!=0) {
+      if (coords.count() != 0) {
          int globalDoc = this.docBase + contextDoc;
          collectedGlobalDocs.set(globalDoc);
          score.put(globalDoc, scorer.score());
@@ -103,11 +103,11 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
          times = new ArrayList<>();
       } else {
          times = fetcher.getTimes(
-             params.getOrigin(),
-             destinations,
-             params.getLimit(),
-             params.getMode(),
-             params.getCountry()
+               params.getOrigin(),
+               destinations,
+               params.getLimit(),
+               params.getMode(),
+               params.getCountry()
          );
       }
 

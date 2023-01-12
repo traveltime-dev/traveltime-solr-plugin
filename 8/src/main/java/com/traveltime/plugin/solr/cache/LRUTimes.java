@@ -8,7 +8,10 @@ import lombok.val;
 import org.apache.solr.search.FastLRUCache;
 import org.apache.solr.search.NoOpRegenerator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class LRUTimes extends TravelTimes {
    private final FastLRUCache<Coordinates, Integer> coordsToTimes = new FastLRUCache<>();
@@ -28,11 +31,11 @@ public class LRUTimes extends TravelTimes {
    public Set<Coordinates> nonCached(int limit, ObjectCollection<Coordinates> coords) {
       val nonCachedSet = new ObjectOpenHashSet<Coordinates>();
       coords.forEach(coord -> {
-                 Integer time = coordsToTimes.get(coord);
-                 if (time == null || (time < 0 && time > -limit)) {
-                    nonCachedSet.add(coord);
-                 }
-              }
+                        Integer time = coordsToTimes.get(coord);
+                        if (time == null || (time < 0 && time > -limit)) {
+                           nonCachedSet.add(coord);
+                        }
+                     }
       );
       return nonCachedSet;
    }

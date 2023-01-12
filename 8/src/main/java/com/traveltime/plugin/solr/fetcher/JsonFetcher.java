@@ -42,9 +42,9 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
          val ioerr = (IOError) left;
          log.warn(ioerr.getMessage());
          log.warn(
-                 Arrays.stream(ioerr.getCause().getStackTrace())
-                         .map(StackTraceElement::toString)
-                         .reduce("", (a, b) -> a + "\n\t" + b)
+               Arrays.stream(ioerr.getCause().getStackTrace())
+                     .map(StackTraceElement::toString)
+                     .reduce("", (a, b) -> a + "\n\t" + b)
          );
       } else if (left instanceof ResponseError) {
          val error = (ResponseError) left;
@@ -55,12 +55,12 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
    public JsonFetcher(URI uri, String id, String key, int locationSizeLimit) {
       val auth = TravelTimeCredentials.builder().appId(id).apiKey(key).build();
       val client = new OkHttpClient.Builder()
-              .connectTimeout(5, TimeUnit.MINUTES)
-              .callTimeout(5, TimeUnit.MINUTES)
-              .readTimeout(5, TimeUnit.MINUTES)
-              .build();
+            .connectTimeout(5, TimeUnit.MINUTES)
+            .callTimeout(5, TimeUnit.MINUTES)
+            .readTimeout(5, TimeUnit.MINUTES)
+            .build();
       val builder = TravelTimeSDK.builder().credentials(auth).client(client);
-      if(uri != null) {
+      if (uri != null) {
          builder.baseProtoUri(uri);
       }
       api = builder.build();
@@ -71,14 +71,16 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
       val result = response.getResults().get(0);
 
       result.getLocations()
-              .forEach(location ->
-                      travelTimes[Integer.parseInt(location.getId())] = location.getProperties().get(0).getTravelTime()
-              );
+            .forEach(location ->
+                           travelTimes[Integer.parseInt(location.getId())] = location.getProperties()
+                                                                                     .get(0)
+                                                                                     .getTravelTime()
+            );
 
       result.getUnreachable()
-              .forEach(unreachableId ->
-                      travelTimes[Integer.parseInt(unreachableId)] = -1
-              );
+            .forEach(unreachableId ->
+                           travelTimes[Integer.parseInt(unreachableId)] = -1
+            );
 
       return travelTimes;
    }
@@ -86,73 +88,75 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
    public List<Integer> getTimes(TimeFilterQueryParameters parameters, ArrayList<Coordinates> points) {
 
       val locations = IntStream
-              .range(0, points.size())
-              .mapToObj(i -> new Location(String.valueOf(i), points.get(i)))
-              .collect(Collectors.toList());
+            .range(0, points.size())
+            .mapToObj(i -> new Location(String.valueOf(i), points.get(i)))
+            .collect(Collectors.toList());
 
       val groupedLocations = Iterables.partition(locations, locationSizeLimit);
 
-      val requests = StreamSupport.stream(groupedLocations.spliterator(), true)
-              .map(locationGroup -> {
-                 val requestBuilder = TimeFilterRequest.builder();
+      val requests = StreamSupport
+            .stream(groupedLocations.spliterator(), true)
+            .map(locationGroup -> {
+               val requestBuilder = TimeFilterRequest.builder();
 
-                 requestBuilder
-                         .location(parameters.getLocation())
-                         .locations(locations);
+               requestBuilder
+                     .location(parameters.getLocation())
+                     .locations(locations);
 
-                  switch (parameters.getSearchType()) {
-                      case ARRIVAL:
-                          val arrivalSearchBuilder = ArrivalSearch
-                                  .builder()
-                                  .id("search")
-                                  .arrivalLocationId(parameters.getLocation().getId())
-                                  .departureLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
-                                  .arrivalTime(parameters.getTime())
-                                  .travelTime(parameters.getTravelTime())
-                                  .properties(Collections.singletonList(Property.TRAVEL_TIME))
-                                  .transportation(parameters.getTransportation());
-                          val arrivalSearch = parameters
-                                  .getRange()
-                                  .map(arrivalSearchBuilder::range)
-                                  .orElse(arrivalSearchBuilder)
-                                  .build();
-                          requestBuilder.arrivalSearch(arrivalSearch);
-                          break;
-                      case DEPARTURE:
-                          val departureSearchBuilder = DepartureSearch
-                                  .builder()
-                                  .id("search")
-                                  .departureLocationId(parameters.getLocation().getId())
-                                  .arrivalLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
-                                  .departureTime(parameters.getTime())
-                                  .travelTime(parameters.getTravelTime())
-                                  .properties(Collections.singletonList(Property.TRAVEL_TIME))
-                                  .transportation(parameters.getTransportation());
-                          val departureSearch = parameters
-                                  .getRange()
-                                  .map(departureSearchBuilder::range)
-                                  .orElse(departureSearchBuilder)
-                                  .build();
-                          requestBuilder.departureSearch(departureSearch);
-                          break;
-                  }
+               switch (parameters.getSearchType()) {
+                  case ARRIVAL:
+                     val arrivalSearchBuilder = ArrivalSearch
+                           .builder()
+                           .id("search")
+                           .arrivalLocationId(parameters.getLocation().getId())
+                           .departureLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
+                           .arrivalTime(parameters.getTime())
+                           .travelTime(parameters.getTravelTime())
+                           .properties(Collections.singletonList(Property.TRAVEL_TIME))
+                           .transportation(parameters.getTransportation());
+                     val arrivalSearch = parameters
+                           .getRange()
+                           .map(arrivalSearchBuilder::range)
+                           .orElse(arrivalSearchBuilder)
+                           .build();
+                     requestBuilder.arrivalSearch(arrivalSearch);
+                     break;
+                  case DEPARTURE:
+                     val departureSearchBuilder = DepartureSearch
+                           .builder()
+                           .id("search")
+                           .departureLocationId(parameters.getLocation().getId())
+                           .arrivalLocationIds(locations.stream().map(Location::getId).collect(Collectors.toList()))
+                           .departureTime(parameters.getTime())
+                           .travelTime(parameters.getTravelTime())
+                           .properties(Collections.singletonList(Property.TRAVEL_TIME))
+                           .transportation(parameters.getTransportation());
+                     val departureSearch = parameters
+                           .getRange()
+                           .map(departureSearchBuilder::range)
+                           .orElse(departureSearchBuilder)
+                           .build();
+                     requestBuilder.departureSearch(departureSearch);
+                     break;
+               }
 
-                 return requestBuilder.build();
-              });
+               return requestBuilder.build();
+            });
 
-       log.info(String.format("Fetching %d locations", points.size()));
+      log.info(String.format("Fetching %d locations", points.size()));
 
-       Integer[] resultArray = new Integer[locations.size()];
+      Integer[] resultArray = new Integer[locations.size()];
 
-       requests.map(request -> Util.time(log, () -> api.send(request)))
-               .forEach(result -> result.fold(err -> {
-                                   logError(err);
-                                   throw new RuntimeException(err.toString());
-                               },
-                               succ -> extractTimes(succ, resultArray))
-               );
+      requests.map(request -> Util.time(log, () -> api.send(request)))
+              .forEach(result -> result.fold(err -> {
+                                                logError(err);
+                                                throw new RuntimeException(err.toString());
+                                             },
+                                             succ -> extractTimes(succ, resultArray)
+                       )
+              );
 
-       return Arrays.stream(resultArray).collect(Collectors.toList());
+      return Arrays.stream(resultArray).collect(Collectors.toList());
    }
 
 }
