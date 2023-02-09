@@ -14,10 +14,15 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
    public static String PARAM_PREFIX = "traveltime_";
    private String cacheName = RequestCache.NAME;
 
+   private boolean isFilteringDisabled = false;
+
    @Override
    public void init(NamedList args) {
       Object cache = args.get("cache");
       if (cache != null) cacheName = cache.toString();
+
+      Object filteringDisabled = args.get("filtering_disabled");
+      if (filteringDisabled != null) this.isFilteringDisabled = Boolean.parseBoolean(filteringDisabled.toString());
 
       Object uriVal = args.get("api_uri");
       URI uri = null;
@@ -35,7 +40,8 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
                                        params,
                                        req,
                                        FetcherSingleton.INSTANCE.getFetcher(),
-                                       cacheName
+                                       cacheName,
+                                       isFilteringDisabled
       );
    }
 

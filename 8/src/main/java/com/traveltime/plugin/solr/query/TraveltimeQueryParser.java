@@ -12,11 +12,13 @@ public class TraveltimeQueryParser extends QParser {
 
    private final Fetcher<TraveltimeQueryParameters> fetcher;
    private final String cacheName;
+   private final boolean isFilteringDisabled;
 
-   public TraveltimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, Fetcher<TraveltimeQueryParameters> fetcher, String cacheName) {
+   public TraveltimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, Fetcher<TraveltimeQueryParameters> fetcher, String cacheName, boolean isFilteringDisabled) {
       super(qstr, localParams, params, req);
       this.fetcher = fetcher;
       this.cacheName = cacheName;
+      this.isFilteringDisabled = isFilteringDisabled;
    }
 
    @Override
@@ -35,7 +37,7 @@ public class TraveltimeQueryParser extends QParser {
       }
 
       val params = TraveltimeQueryParameters.parse(req.getSchema(), paramSource);
-      return new TraveltimeSearchQuery<>(params, weight, fetcher, cacheName);
+      return new TraveltimeSearchQuery<>(params, weight, fetcher, cacheName, isFilteringDisabled);
    }
 
 }

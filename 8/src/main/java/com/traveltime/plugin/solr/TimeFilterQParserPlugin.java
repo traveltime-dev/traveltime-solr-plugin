@@ -15,12 +15,17 @@ import java.util.Optional;
 public class TimeFilterQParserPlugin extends QParserPlugin {
    private String cacheName = RequestCache.NAME;
 
+   private boolean isFilteringDisabled = false;
+
    private static final Integer DEFAULT_LOCATION_SIZE_LIMIT = 2000;
 
    @Override
    public void init(NamedList args) {
       Object cache = args.get("cache");
       if (cache != null) cacheName = cache.toString();
+
+      Object filteringDisabled = args.get("filtering_disabled");
+      if (filteringDisabled != null) this.isFilteringDisabled = Boolean.parseBoolean(filteringDisabled.toString());
 
       Object uriVal = args.get("api_uri");
       URI uri = null;
@@ -43,7 +48,8 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
                                        params,
                                        req,
                                        JsonFetcherSingleton.INSTANCE.getFetcher(),
-                                       cacheName
+                                       cacheName,
+                                       isFilteringDisabled
       );
    }
 
