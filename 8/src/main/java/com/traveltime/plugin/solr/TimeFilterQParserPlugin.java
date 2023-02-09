@@ -12,8 +12,12 @@ import org.apache.solr.search.QParserPlugin;
 import java.net.URI;
 import java.util.Optional;
 
+import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
+
 public class TimeFilterQParserPlugin extends QParserPlugin {
    private String cacheName = RequestCache.NAME;
+
+   private String paramPrefix = PARAM_PREFIX;
 
    private static final Integer DEFAULT_LOCATION_SIZE_LIMIT = 2000;
 
@@ -21,6 +25,9 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
    public void init(NamedList args) {
       Object cache = args.get("cache");
       if (cache != null) cacheName = cache.toString();
+
+      Object prefix = args.get("prefix");
+      if (prefix != null) paramPrefix = prefix.toString();
 
       Object uriVal = args.get("api_uri");
       URI uri = null;
@@ -43,7 +50,8 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
                                        params,
                                        req,
                                        JsonFetcherSingleton.INSTANCE.getFetcher(),
-                                       cacheName
+                                       cacheName,
+                                       paramPrefix
       );
    }
 

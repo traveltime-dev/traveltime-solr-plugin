@@ -10,14 +10,21 @@ import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
 import org.apache.solr.search.ValueSourceParser;
 
+import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
+
 public class TraveltimeValueSourceParser extends ValueSourceParser {
    private String cacheName = RequestCache.NAME;
+
+   private String paramPrefix = PARAM_PREFIX;
 
    @Override
    public void init(NamedList args) {
       super.init(args);
       Object cache = args.get("cache");
       if (cache != null) cacheName = cache.toString();
+
+      Object prefix = args.get("prefix");
+      if (prefix != null) paramPrefix = prefix.toString();
    }
 
    @Override
@@ -32,7 +39,7 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
          );
       }
 
-      val queryParameters = TraveltimeQueryParameters.parse(req.getSchema(), new ParamSource(fp.getParams()));
+      val queryParameters = TraveltimeQueryParameters.parse(req.getSchema(), new ParamSource(paramPrefix, fp.getParams()));
       return new TraveltimeValueSource<>(queryParameters, cache.getOrFresh(queryParameters));
    }
 }
