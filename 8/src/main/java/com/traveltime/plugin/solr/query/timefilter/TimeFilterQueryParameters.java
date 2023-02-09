@@ -146,4 +146,14 @@ public class TimeFilterQueryParameters implements QueryParams {
       }
       return queryParams;
    }
+
+    @Override
+    public Coordinates getOrigin() {
+        return location.getCoords();
+    }
+
+    @Override
+    public String getTransportMode() {
+        return transportation == null ? "-" : transportation.toString();
+    }
 }
