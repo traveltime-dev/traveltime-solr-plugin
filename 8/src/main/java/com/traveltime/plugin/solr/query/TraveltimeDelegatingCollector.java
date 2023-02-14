@@ -64,8 +64,8 @@ public class TraveltimeDelegatingCollector<Params extends QueryParams> extends D
       if (context.ord != 0) contextBaseEnd[context.ord - 1] = context.docBase - 1;
       if (context.ord == contexts.length - 1) contextBaseEnd[context.ord] = maxDoc;
 
-      docBase = context.docBase;
       coords = DocValues.getSortedNumeric(context.reader(), params.getField());
+      super.doSetNextReader(context);
    }
 
    @Override
