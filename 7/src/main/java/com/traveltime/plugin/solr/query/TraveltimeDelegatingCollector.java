@@ -58,15 +58,15 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
    }
 
    @Override
-   protected void doSetNextReader(LeafReaderContext context) throws IOException {
+   protected void  doSetNextReader(LeafReaderContext context) throws IOException {
       contexts[context.ord] = context;
 
       contextBaseStart[context.ord] = context.docBase;
       if (context.ord != 0) contextBaseEnd[context.ord - 1] = context.docBase - 1;
       if (context.ord == contexts.length - 1) contextBaseEnd[context.ord] = maxDoc;
 
-      docBase = context.docBase;
       coords = DocValues.getSortedNumeric(context.reader(), params.getField());
+      super.doSetNextReader(context);
    }
 
    @Override
