@@ -24,6 +24,9 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
       URI uri = null;
       if (uriVal != null) uri = URI.create(uriVal.toString());
 
+      Object prefix = args.get("prefix");
+      if (prefix != null) paramPrefix = prefix.toString();
+
       String appId = args.get("app_id").toString();
       String apiKey = args.get("api_key").toString();
       FetcherSingleton.INSTANCE.init(uri, appId, apiKey);

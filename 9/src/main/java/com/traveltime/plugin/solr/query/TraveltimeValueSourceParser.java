@@ -20,8 +20,12 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
    @Override
    public void init(NamedList args) {
       super.init(args);
+
       Object cache = args.get("cache");
       if (cache != null) cacheName = cache.toString();
+
+      Object prefix = args.get("prefix");
+      if (prefix != null) paramPrefix = prefix.toString();
    }
 
    private String getParam(SolrParams params, String name) throws SyntaxError {
