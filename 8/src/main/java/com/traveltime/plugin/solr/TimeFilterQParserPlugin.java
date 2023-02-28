@@ -16,7 +16,7 @@ import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
 
 public class TimeFilterQParserPlugin extends QParserPlugin {
    private String cacheName = RequestCache.NAME;
-
+   private boolean isFilteringDisabled = false;
    private String paramPrefix = PARAM_PREFIX;
 
    private static final Integer DEFAULT_LOCATION_SIZE_LIMIT = 2000;
@@ -26,6 +26,9 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
       Object cache = args.get("cache");
       if (cache != null) cacheName = cache.toString();
 
+      Object filteringDisabled = args.get("filtering_disabled");
+      if (filteringDisabled != null) this.isFilteringDisabled = Boolean.parseBoolean(filteringDisabled.toString());
+      
       Object prefix = args.get("prefix");
       if (prefix != null) paramPrefix = prefix.toString();
 
@@ -51,6 +54,7 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
                                        req,
                                        JsonFetcherSingleton.INSTANCE.getFetcher(),
                                        cacheName,
+                                       isFilteringDisabled,
                                        paramPrefix
       );
    }

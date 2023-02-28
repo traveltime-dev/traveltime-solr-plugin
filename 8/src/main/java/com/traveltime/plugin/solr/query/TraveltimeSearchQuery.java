@@ -17,6 +17,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
    private final float weight;
    private final Fetcher<Params> fetcher;
    private final String cacheName;
+   private final boolean isFilteringDisabled;
 
    @Override
    public String toString(String field) {
@@ -29,7 +30,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
       RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
       int maxDoc = searcher.maxDoc();
       int leafCount = searcher.getTopReaderContext().leaves().size();
-      return new TraveltimeDelegatingCollector<>(maxDoc, leafCount, params, weight, fetcher, cache);
+      return new TraveltimeDelegatingCollector<>(maxDoc, leafCount, params, weight, fetcher, cache, isFilteringDisabled);
    }
 
    @Override
