@@ -15,17 +15,19 @@ public class TimeFilterQueryParser extends QParser {
    private final Fetcher<TimeFilterQueryParameters> fetcher;
    private final String cacheName;
    private final boolean isFilteringDisabled;
+   private final String paramPrefix;
 
    public TimeFilterQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, Fetcher<TimeFilterQueryParameters> fetcher, String cacheName, boolean isFilteringDisabled) {
       super(qstr, localParams, params, req);
       this.fetcher = fetcher;
       this.cacheName = cacheName;
       this.isFilteringDisabled = isFilteringDisabled;
+      this.paramPrefix = paramPrefix;
    }
 
    @Override
    public TraveltimeSearchQuery<TimeFilterQueryParameters> parse() throws SyntaxError {
-      ParamSource paramSource = new ParamSource(localParams, params);
+      ParamSource paramSource = new ParamSource(paramPrefix, localParams, params);
       float weight;
       try {
          weight = Float.parseFloat(paramSource.getParam(WEIGHT));

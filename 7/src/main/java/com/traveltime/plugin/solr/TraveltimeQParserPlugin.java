@@ -13,6 +13,7 @@ import java.net.URI;
 public class TraveltimeQParserPlugin extends QParserPlugin {
    public static String PARAM_PREFIX = "traveltime_";
    private String cacheName = RequestCache.NAME;
+   private String paramPrefix = PARAM_PREFIX;
 
    private boolean isFilteringDisabled = false;
 
@@ -28,6 +29,9 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
       URI uri = null;
       if (uriVal != null) uri = URI.create(uriVal.toString());
 
+      Object prefix = args.get("prefix");
+      if (prefix != null) paramPrefix = prefix.toString();
+
       String appId = args.get("app_id").toString();
       String apiKey = args.get("api_key").toString();
       FetcherSingleton.INSTANCE.init(uri, appId, apiKey);
@@ -42,6 +46,7 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
                                        FetcherSingleton.INSTANCE.getFetcher(),
                                        cacheName,
                                        isFilteringDisabled
+                                       paramPrefix
       );
    }
 

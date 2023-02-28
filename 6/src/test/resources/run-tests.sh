@@ -18,6 +18,11 @@ docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:applicatio
 docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "traveltime_e", "class": "com.traveltime.plugin.solr.query.TraveltimeValueSourceParser", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
 docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "traveltime_f", "class": "com.traveltime.plugin.solr.query.TraveltimeValueSourceParser", "cache": "traveltime_fuzzy"}}' http://localhost:8983/solr/london/config
 
+docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "traveltime_driving", "prefix": "driving_", "class": "com.traveltime.plugin.solr.TraveltimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
+docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "traveltime_walking", "prefix": "walking_",  "class": "com.traveltime.plugin.solr.TraveltimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
+docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "traveltime_driving", "prefix": "driving_", "class": "com.traveltime.plugin.solr.query.TraveltimeValueSourceParser", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
+docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "traveltime_walking", "prefix": "walking_","class": "com.traveltime.plugin.solr.query.TraveltimeValueSourceParser", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
+
 docker exec $IMAGE_NAME post -c london part0.json
 
 URL='http://localhost:8983/solr/london/select'
@@ -54,6 +59,25 @@ docker exec $IMAGE_NAME \
 docker exec $IMAGE_NAME \
   curl -s --fail $DATA_ARGS --data-urlencode fq="{!traveltime_e weight=1}" --data-urlencode "fl=time:traveltime_e(),id" $URL \
   | jq '.response.docs[0].id' | xargs test "n3079325660" ==
+
+DUAL_ARGS="\
+  --data-urlencode q=*:*\
+  --data-urlencode walking_field=coords\
+  --data-urlencode walking_limit=50\
+  --data-urlencode walking_origin=51.509865,-0.118092\
+  --data-urlencode walking_country=uk\
+  --data-urlencode walking_mode=walking\
+  --data-urlencode driving_field=coords\
+  --data-urlencode driving_limit=50\
+  --data-urlencode driving_origin=51.5098,-0.1180\
+  --data-urlencode driving_country=uk\
+  --data-urlencode driving_mode=driving\
+  --data-urlencode wt=json\
+"
+
+docker exec $IMAGE_NAME \
+  curl -s --fail $DUAL_ARGS --data-urlencode fq="{!traveltime_driving weight=1}" --data-urlencode fq="{!traveltime_walking weight=1}" --data-urlencode "fl=driving:traveltime_driving(),walking:traveltime_walking(),id" $URL \
+  | jq '.response.numFound' | xargs test 221 -eq
 
 docker stop $IMAGE_NAME
 trap EXIT
