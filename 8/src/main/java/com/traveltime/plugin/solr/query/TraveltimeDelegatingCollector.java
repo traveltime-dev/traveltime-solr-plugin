@@ -37,12 +37,13 @@ public class TraveltimeDelegatingCollector<Params extends QueryParams> extends D
    private final Int2ObjectOpenHashMap<Coordinates> globalDoc2Coords;
    private final Fetcher<Params> fetcher;
    private final RequestCache<Params> cache;
+   private final boolean isFilteringDisabled;
 
    private Object2IntOpenHashMap<Coordinates> pointToTime;
    private SortedNumericDocValues coords;
 
 
-   public TraveltimeDelegatingCollector(int maxDoc, int segments, Params params, float scoreWeight, Fetcher<Params> fetcher, RequestCache<Params> cache) {
+   public TraveltimeDelegatingCollector(int maxDoc, int segments, Params params, float scoreWeight, Fetcher<Params> fetcher, RequestCache<Params> cache, boolean isFilteringDisabled) {
       this.maxDoc = maxDoc;
       this.contexts = new LeafReaderContext[segments];
       this.contextBaseStart = new int[segments];
@@ -54,6 +55,7 @@ public class TraveltimeDelegatingCollector<Params extends QueryParams> extends D
       this.scoreWeight = scoreWeight;
       this.fetcher = fetcher;
       this.cache = cache;
+      this.isFilteringDisabled = isFilteringDisabled;
    }
 
    @Override
@@ -120,7 +122,7 @@ public class TraveltimeDelegatingCollector<Params extends QueryParams> extends D
             currentContextIndex++;
          }
 
-         if (pointToTime.containsKey(globalDoc2Coords.get(globalDoc))) {
+         if (isFilteringDisabled || pointToTime.containsKey(globalDoc2Coords.get(globalDoc))) {
             int contextDoc = globalDoc - contextBaseStart[currentContextIndex];
             leafDelegate = delegate.getLeafCollector(contexts[currentContextIndex]);
             leafDelegate.setScorer(forwardingScorer);
