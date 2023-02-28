@@ -13,6 +13,7 @@ import java.net.URI;
 public class TraveltimeQParserPlugin extends QParserPlugin {
    public static String PARAM_PREFIX = "traveltime_";
    private String cacheName = RequestCache.NAME;
+   private String paramPrefix = PARAM_PREFIX;
 
    @Override
    public void init(NamedList args) {
@@ -22,6 +23,9 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
       Object uriVal = args.get("api_uri");
       URI uri = null;
       if (uriVal != null) uri = URI.create(uriVal.toString());
+
+      Object prefix = args.get("prefix");
+      if (prefix != null) paramPrefix = prefix.toString();
 
       String appId = args.get("app_id").toString();
       String apiKey = args.get("api_key").toString();
@@ -35,7 +39,8 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
                                        params,
                                        req,
                                        FetcherSingleton.INSTANCE.getFetcher(),
-                                       cacheName
+                                       cacheName,
+                                       paramPrefix
       );
    }
 

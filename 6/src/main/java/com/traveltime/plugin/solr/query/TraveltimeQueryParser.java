@@ -7,18 +7,19 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.QParser;
 import org.apache.solr.search.SyntaxError;
 
-import static com.traveltime.plugin.solr.TraveltimeQParserPlugin.PARAM_PREFIX;
-
 public class TraveltimeQueryParser extends QParser {
    private static final String WEIGHT = "weight";
 
    private final ProtoFetcher fetcher;
    private final String cacheName;
 
-   public TraveltimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, ProtoFetcher fetcher, String cacheName) {
+   private final String paramPrefix;
+
+   public TraveltimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, ProtoFetcher fetcher, String cacheName, String paramPrefix) {
       super(qstr, localParams, params, req);
       this.fetcher = fetcher;
       this.cacheName = cacheName;
+      this.paramPrefix = paramPrefix;
    }
 
    private String getBestParam(String name) throws SyntaxError {
@@ -26,10 +27,10 @@ public class TraveltimeQueryParser extends QParser {
       if (localParams != null) {
          param = localParams.get(name);
          if (param != null) return param;
-         param = localParams.get(PARAM_PREFIX + name);
+         param = localParams.get(paramPrefix + name);
          if (param != null) return param;
       }
-      param = params.get(PARAM_PREFIX + name);
+      param = params.get(paramPrefix + name);
       if (param != null) return param;
       param = params.get(name);
       if (param != null) return param;

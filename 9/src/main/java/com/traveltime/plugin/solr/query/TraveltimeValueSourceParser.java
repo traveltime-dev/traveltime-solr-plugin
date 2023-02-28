@@ -15,16 +15,21 @@ import static com.traveltime.plugin.solr.TraveltimeQParserPlugin.PARAM_PREFIX;
 
 public class TraveltimeValueSourceParser extends ValueSourceParser {
    private String cacheName = RequestCache.NAME;
+   private String paramPrefix = PARAM_PREFIX;
 
    @Override
    public void init(NamedList args) {
       super.init(args);
+
       Object cache = args.get("cache");
       if (cache != null) cacheName = cache.toString();
+
+      Object prefix = args.get("prefix");
+      if (prefix != null) paramPrefix = prefix.toString();
    }
 
    private String getParam(SolrParams params, String name) throws SyntaxError {
-      String param = params.get(PARAM_PREFIX + name);
+      String param = params.get(paramPrefix + name);
       if (param != null) return param;
       param = params.get(name);
       if (param != null) return param;
