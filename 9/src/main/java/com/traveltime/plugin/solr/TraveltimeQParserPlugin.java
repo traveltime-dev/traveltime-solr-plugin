@@ -37,7 +37,8 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
                                        req,
                                        FetcherSingleton.INSTANCE.getFetcher(),
                                        cacheName,
-              paramPrefix);
+                                       paramPrefix
+      );
    }
 
 }
