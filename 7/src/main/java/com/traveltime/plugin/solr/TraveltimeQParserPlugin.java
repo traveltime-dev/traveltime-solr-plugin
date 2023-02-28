@@ -13,6 +13,7 @@ import java.net.URI;
 public class TraveltimeQParserPlugin extends QParserPlugin {
    public static String PARAM_PREFIX = "traveltime_";
    private String cacheName = RequestCache.NAME;
+   private String paramPrefix = PARAM_PREFIX;
 
    @Override
    public void init(NamedList args) {
@@ -35,8 +36,8 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
                                        params,
                                        req,
                                        FetcherSingleton.INSTANCE.getFetcher(),
-                                       cacheName
-      );
+                                       cacheName,
+              paramPrefix);
    }
 
 }

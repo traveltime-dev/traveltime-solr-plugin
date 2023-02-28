@@ -11,13 +11,20 @@ import org.apache.solr.search.QParserPlugin;
 
 import java.net.URI;
 
+import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
+
 public class TraveltimeQParserPlugin extends QParserPlugin {
    private String cacheName = RequestCache.NAME;
+
+   private String paramPrefix = PARAM_PREFIX;
 
    @Override
    public void init(NamedList args) {
       Object cache = args.get("cache");
       if (cache != null) cacheName = cache.toString();
+
+      Object prefix = args.get("prefix");
+      if (prefix != null) paramPrefix = prefix.toString();
 
       Object uriVal = args.get("api_uri");
       URI uri = null;
@@ -35,7 +42,8 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
                                        params,
                                        req,
                                        ProtoFetcherSingleton.INSTANCE.getFetcher(),
-                                       cacheName
+                                       cacheName,
+                                       paramPrefix
       );
    }
 
