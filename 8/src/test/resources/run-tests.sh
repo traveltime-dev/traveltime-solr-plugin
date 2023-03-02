@@ -66,7 +66,7 @@ docker exec $IMAGE_NAME \
   | jq '.response.numFound' | xargs test 103821 -eq
 
 DUAL_ARGS="\
-  --data-urlencode q=*:*\
+  \
   --data-urlencode walking_field=coords\
   --data-urlencode walking_limit=50\
   --data-urlencode walking_origin=51.509865,-0.118092\
@@ -80,8 +80,12 @@ DUAL_ARGS="\
 "
 
 docker exec $IMAGE_NAME \
-  curl -s --fail $DUAL_ARGS --data-urlencode fq="{!traveltime_driving weight=1}" --data-urlencode fq="{!traveltime_walking weight=1}" --data-urlencode "fl=driving:traveltime_driving(),walking:traveltime_walking(),id" $URL \
+  curl -s --fail $DUAL_ARGS --data-urlencode "q=*:*" --data-urlencode fq="{!traveltime_driving weight=1}" --data-urlencode fq="{!traveltime_walking weight=1}" --data-urlencode "fl=driving:traveltime_driving(),walking:traveltime_walking(),id" $URL \
   | jq '.response.numFound' | xargs test 221 -eq
+
+docker exec $IMAGE_NAME \
+  curl -s --fail $DUAL_ARGS --data-urlencode q="({!traveltime_driving}^0.5 OR {!traveltime_walking}^0.5)" --data-urlencode fq="{!traveltime_driving}" --data-urlencode fq="{!traveltime_walking}" --data-urlencode "fl=id,score" $URL \
+  | jq '.response.docs[0].score' | xargs test 0.9259259 ==
 
 docker stop $IMAGE_NAME
 trap EXIT

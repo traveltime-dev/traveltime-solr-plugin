@@ -78,4 +78,9 @@ public class TraveltimeQueryParameters implements QueryParams {
 
       return new TraveltimeQueryParameters(field, origin, limit, mode, country);
    }
+
+   @Override
+   public String getTransportMode() {
+      return mode == null ? "-" : mode.getValue();
+   }
 }
