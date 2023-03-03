@@ -40,8 +40,9 @@ public class TimeFilterValueSourceParser extends ValueSourceParser {
          );
       }
 
-      TimeFilterQueryParameters queryParams = TimeFilterQueryParameters.parse(req.getSchema(),
-                                                                              new ParamSource(paramPrefix, fp.getParams())
+      TimeFilterQueryParameters queryParams = TimeFilterQueryParameters.parse(
+            req.getSchema(),
+            new ParamSource(paramPrefix, fp.getParams())
       );
       return new TraveltimeValueSource<>(queryParams, cache.getOrFresh(queryParams));
    }

@@ -51,8 +51,9 @@ public final class Util {
          GeoUtils.checkLongitude(lat);
          return new Coordinates(lat, lng);
       } else {
-         throw new SolrException(SolrException.ErrorCode.BAD_REQUEST,
-                                 "Could not decode string" + str + " as coordinates"
+         throw new SolrException(
+               SolrException.ErrorCode.BAD_REQUEST,
+               "Could not decode string" + str + " as coordinates"
          );
       }
    }

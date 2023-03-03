@@ -39,7 +39,10 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
          );
       }
 
-      val queryParameters = TraveltimeQueryParameters.parse(req.getSchema(), new ParamSource(paramPrefix, fp.getParams()));
+      val queryParameters = TraveltimeQueryParameters.parse(
+            req.getSchema(),
+            new ParamSource(paramPrefix, fp.getParams())
+      );
       return new TraveltimeValueSource<>(queryParameters, cache.getOrFresh(queryParameters));
    }
 }

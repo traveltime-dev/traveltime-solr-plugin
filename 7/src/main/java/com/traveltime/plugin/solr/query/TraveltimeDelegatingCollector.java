@@ -60,7 +60,7 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
    }
 
    @Override
-   protected void  doSetNextReader(LeafReaderContext context) throws IOException {
+   protected void doSetNextReader(LeafReaderContext context) throws IOException {
       contexts[context.ord] = context;
 
       contextBaseStart[context.ord] = context.docBase;

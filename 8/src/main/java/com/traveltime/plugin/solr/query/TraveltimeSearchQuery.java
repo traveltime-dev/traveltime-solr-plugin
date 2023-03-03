@@ -58,7 +58,15 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
       RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
       int maxDoc = searcher.maxDoc();
       int leafCount = searcher.getTopReaderContext().leaves().size();
-      return new TraveltimeDelegatingCollector<>(maxDoc, leafCount, params, weight, fetcher, cache, isFilteringDisabled);
+      return new TraveltimeDelegatingCollector<>(
+            maxDoc,
+            leafCount,
+            params,
+            weight,
+            fetcher,
+            cache,
+            isFilteringDisabled
+      );
    }
 
    @Override
@@ -90,7 +98,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
 
    @Override
    public Weight createWeight(IndexSearcher indexSearcher, ScoreMode scoreMode, float boost) {
-      SolrIndexSearcher searcher = (SolrIndexSearcher)indexSearcher;
+      SolrIndexSearcher searcher = (SolrIndexSearcher) indexSearcher;
       RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
       TravelTimes travelTimes = cache.get(params);
       return new Weight(this) {
@@ -104,7 +112,8 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
          }
 
          @Override
-         public void extractTerms(Set<Term> terms) {}
+         public void extractTerms(Set<Term> terms) {
+         }
 
          @Override
          public Explanation explain(LeafReaderContext context, int doc) throws IOException {
@@ -113,7 +122,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
                return Explanation.noMatch("Document " + doc + " doesn't have a value for field " + params.getField());
             }
             long encodedDocumentCoordinate = selectValue(multiDocValues);
-            int documentLatitudeBits = (int)(encodedDocumentCoordinate >> 32);
+            int documentLatitudeBits = (int) (encodedDocumentCoordinate >> 32);
             int documentLongitudeBits = (int) encodedDocumentCoordinate;
             double documentLat = GeoEncodingUtils.decodeLatitude(documentLatitudeBits);
             double documentLon = GeoEncodingUtils.decodeLongitude(documentLongitudeBits);
@@ -131,14 +140,16 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
             float score = travelTime == -1 ? 0.0f : (float) (boost * (limitAsDouble / (limitAsDouble + travelTime)));
 
             Coordinates queryOrigin = params.getOrigin();
-            return Explanation.match(score, params.getTransportMode() + " score, computed as, when present, boost * limit / (limit + travelTime), otherwise 0.0, from:",
-                    Explanation.match(boost, "weight"),
-                    Explanation.match(limit, "maximum travel time"),
-                    Explanation.match(queryOrigin.getLat(), "query lat"),
-                    Explanation.match(queryOrigin.getLng(), "query lon"),
-                    Explanation.match(documentLat, "document lat"),
-                    Explanation.match(documentLon, "document lon"),
-                    Explanation.match(travelTime, "travel time"));
+            return Explanation.match(score,
+                                     params.getTransportMode() + " score, computed as, when present, boost * limit / (limit + travelTime), otherwise 0.0, from:",
+                                     Explanation.match(boost, "weight"),
+                                     Explanation.match(limit, "maximum travel time"),
+                                     Explanation.match(queryOrigin.getLat(), "query lat"),
+                                     Explanation.match(queryOrigin.getLng(), "query lon"),
+                                     Explanation.match(documentLat, "document lat"),
+                                     Explanation.match(documentLon, "document lon"),
+                                     Explanation.match(travelTime, "travel time")
+            );
          }
 
          private long selectValue(SortedNumericDocValues multiDocValues) throws IOException {
@@ -155,7 +166,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
             if (singleton != null) {
                return singleton;
             }
-            return  new NumericDocValues() {
+            return new NumericDocValues() {
 
                long value;
 
@@ -204,7 +215,10 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
                // No data on this segment
                return null;
             }
-            final SortedNumericDocValues multiDocValues = DocValues.getSortedNumeric(context.reader(), params.getField());
+            final SortedNumericDocValues multiDocValues = DocValues.getSortedNumeric(
+                  context.reader(),
+                  params.getField()
+            );
             final NumericDocValues docValues = selectValues(multiDocValues);
 
             final Weight weight = this;
@@ -212,7 +226,16 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
 
                @Override
                public Scorer get(long leadCost) {
-                  return new TravelTimeScorer(params.getTravelTime(), travelTimes, weight, context.reader().maxDoc(), leadCost, boost, pointValues, docValues);
+                  return new TravelTimeScorer(
+                        params.getTravelTime(),
+                        travelTimes,
+                        weight,
+                        context.reader().maxDoc(),
+                        leadCost,
+                        boost,
+                        pointValues,
+                        docValues
+                  );
                }
 
                @Override

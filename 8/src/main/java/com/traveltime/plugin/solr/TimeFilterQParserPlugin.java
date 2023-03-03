@@ -28,7 +28,7 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
 
       Object filteringDisabled = args.get("filtering_disabled");
       if (filteringDisabled != null) this.isFilteringDisabled = Boolean.parseBoolean(filteringDisabled.toString());
-      
+
       Object prefix = args.get("prefix");
       if (prefix != null) paramPrefix = prefix.toString();
 
@@ -48,14 +48,15 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
 
    @Override
    public QParser createParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req) {
-      return new TimeFilterQueryParser(qstr,
-                                       localParams,
-                                       params,
-                                       req,
-                                       JsonFetcherSingleton.INSTANCE.getFetcher(),
-                                       cacheName,
-                                       isFilteringDisabled,
-                                       paramPrefix
+      return new TimeFilterQueryParser(
+            qstr,
+            localParams,
+            params,
+            req,
+            JsonFetcherSingleton.INSTANCE.getFetcher(),
+            cacheName,
+            isFilteringDisabled,
+            paramPrefix
       );
    }
 

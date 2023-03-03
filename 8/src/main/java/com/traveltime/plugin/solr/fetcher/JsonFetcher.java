@@ -148,11 +148,12 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
       Integer[] resultArray = new Integer[locations.size()];
 
       requests.map(request -> Util.time(log, () -> api.send(request)))
-              .forEach(result -> result.fold(err -> {
-                                                logError(err);
-                                                throw new RuntimeException(err.toString());
-                                             },
-                                             succ -> extractTimes(succ, resultArray)
+              .forEach(result -> result.fold(
+                             err -> {
+                                logError(err);
+                                throw new RuntimeException(err.toString());
+                             },
+                             succ -> extractTimes(succ, resultArray)
                        )
               );
 

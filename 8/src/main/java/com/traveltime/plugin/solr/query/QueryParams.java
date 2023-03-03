@@ -7,7 +7,7 @@ public interface QueryParams {
 
    int getTravelTime();
 
-    Coordinates getOrigin();
+   Coordinates getOrigin();
 
-    String getTransportMode();
+   String getTransportMode();
 }

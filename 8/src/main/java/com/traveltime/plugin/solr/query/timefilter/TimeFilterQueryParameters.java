@@ -72,16 +72,18 @@ public class TimeFilterQueryParameters implements QueryParams {
       val departureLocation = paramSource.getOptionalParam(TimeFilterQueryParameters.DEPARTURE_LOCATION);
 
       if (arrivalTime.isPresent() != arrivalLocation.isPresent()) {
-         throw new SyntaxError(String.format("Only one of [%s, %s] was defined. Either both must be defined or none.",
-                                             TimeFilterQueryParameters.ARRIVAL_TIME,
-                                             TimeFilterQueryParameters.ARRIVAL_LOCATION
+         throw new SyntaxError(String.format(
+               "Only one of [%s, %s] was defined. Either both must be defined or none.",
+               TimeFilterQueryParameters.ARRIVAL_TIME,
+               TimeFilterQueryParameters.ARRIVAL_LOCATION
          ));
       }
 
       if (departureTime.isPresent() != departureLocation.isPresent()) {
-         throw new SyntaxError(String.format("Only one of [%s, %s] was defined. Either both must be defined or none.",
-                                             TimeFilterQueryParameters.DEPARTURE_TIME,
-                                             TimeFilterQueryParameters.DEPARTURE_LOCATION
+         throw new SyntaxError(String.format(
+               "Only one of [%s, %s] was defined. Either both must be defined or none.",
+               TimeFilterQueryParameters.DEPARTURE_TIME,
+               TimeFilterQueryParameters.DEPARTURE_LOCATION
          ));
       }
 
@@ -90,8 +92,9 @@ public class TimeFilterQueryParameters implements QueryParams {
                "You must provide exactly one of the parameter sets of arrival time/location or departure time/location, but not both or neither.");
       }
 
-      val transportation = JsonUtils.fromJson(paramSource.getParam(TimeFilterQueryParameters.TRANSPORTATION),
-                                              Transportation.class
+      val transportation = JsonUtils.fromJson(
+            paramSource.getParam(TimeFilterQueryParameters.TRANSPORTATION),
+            Transportation.class
       );
 
       val range = paramSource.getOptionalParam(TimeFilterQueryParameters.RANGE)
@@ -110,8 +113,9 @@ public class TimeFilterQueryParameters implements QueryParams {
 
       TimeFilterQueryParameters queryParams;
       if (arrivalTime.isPresent()) {
-         val locationCoords = JsonUtils.fromJson(paramSource.getParam(TimeFilterQueryParameters.ARRIVAL_LOCATION),
-                                                 Coordinates.class
+         val locationCoords = JsonUtils.fromJson(
+               paramSource.getParam(TimeFilterQueryParameters.ARRIVAL_LOCATION),
+               Coordinates.class
          );
          val time = Instant.parse(paramSource.getParam(TimeFilterQueryParameters.ARRIVAL_TIME));
 
@@ -127,8 +131,9 @@ public class TimeFilterQueryParameters implements QueryParams {
                SearchType.ARRIVAL
          );
       } else {
-         val locationCoords = JsonUtils.fromJson(paramSource.getParam(TimeFilterQueryParameters.DEPARTURE_LOCATION),
-                                                 Coordinates.class
+         val locationCoords = JsonUtils.fromJson(
+               paramSource.getParam(TimeFilterQueryParameters.DEPARTURE_LOCATION),
+               Coordinates.class
          );
          val time = Instant.parse(paramSource.getParam(TimeFilterQueryParameters.DEPARTURE_TIME));
 
@@ -147,13 +152,13 @@ public class TimeFilterQueryParameters implements QueryParams {
       return queryParams;
    }
 
-    @Override
-    public Coordinates getOrigin() {
-        return location.getCoords();
-    }
+   @Override
+   public Coordinates getOrigin() {
+      return location.getCoords();
+   }
 
-    @Override
-    public String getTransportMode() {
-        return transportation == null ? "-" : transportation.toString();
-    }
+   @Override
+   public String getTransportMode() {
+      return transportation == null ? "-" : transportation.toString();
+   }
 }
