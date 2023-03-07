@@ -32,11 +32,10 @@ import java.io.IOException;
 
 class TravelTimeScorer extends Scorer {
 
-   private DocIdSetIterator it;
+   private final DocIdSetIterator it;
    private int doc = -1;
    private final float boost;
    private final NumericDocValues docValues;
-   private final int limit;
    // Stored as a double so conversion from int to double does not have to be
    // done every time the score is calculated.
    private final double limitAsDouble;
@@ -44,7 +43,6 @@ class TravelTimeScorer extends Scorer {
 
    protected TravelTimeScorer(int limit, TravelTimes travelTimes, Weight weight, float boost, NumericDocValues docValues) {
       super(weight);
-      this.limit = limit;
       this.limitAsDouble = limit;
       this.travelTimes = travelTimes;
       this.boost = boost;
@@ -69,34 +67,6 @@ class TravelTimeScorer extends Scorer {
       // score significantly better than unavailable travel times:
       // >= 0.5 versus 0.0.
       return travelTime == -1.0 ? 0.0f : (float) (boost * (limitAsDouble / (limitAsDouble + travelTime)));
-   }
-
-   /**
-    * Inverting the score computation is very hard due to all potential
-    * rounding errors, so we binary search the maximum travel time. The
-    * limit is set to 1 second.
-    */
-   private int computeMaxTravelTime(float minScore, int previousMaxTravelTime) {
-      assert score(0) >= minScore;
-      if (score(previousMaxTravelTime) >= minScore) {
-         // minScore did not decrease enough to require an update to the max travel time
-         return previousMaxTravelTime;
-      }
-      assert score(previousMaxTravelTime) < minScore;
-      int min = 0, max = previousMaxTravelTime;
-      // invariant: score(min) >= minScore && score(max) < minScore
-      while (max - min > 1) {
-         int mid = (min + max) / 2;
-         float score = score(mid);
-         if (score >= minScore) {
-            min = mid;
-         } else {
-            max = mid;
-         }
-      }
-      assert score(min) >= minScore;
-      assert min == limit || score(min + 1) < minScore;
-      return min;
    }
 
    @Override

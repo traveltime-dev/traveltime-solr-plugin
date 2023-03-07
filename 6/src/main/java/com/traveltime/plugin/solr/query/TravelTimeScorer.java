@@ -32,11 +32,10 @@ import java.io.IOException;
 
 class TravelTimeScorer extends Scorer {
 
-   private DocIdSetIterator it;
+   private final DocIdSetIterator it;
    private int doc = -1;
    private final float queryWeight;
    private final NumericDocValues docValues;
-   private final int limit;
    // Stored as a double so conversion from int to double does not have to be
    // done every time the score is calculated.
    private final double limitAsDouble;
@@ -44,7 +43,6 @@ class TravelTimeScorer extends Scorer {
 
    protected TravelTimeScorer(int limit, TravelTimes travelTimes, Weight weight, float queryWeight, NumericDocValues docValues, DocIdSetIterator docs) {
       super(weight);
-      this.limit = limit;
       this.limitAsDouble = limit;
       this.travelTimes = travelTimes;
       this.queryWeight = queryWeight;

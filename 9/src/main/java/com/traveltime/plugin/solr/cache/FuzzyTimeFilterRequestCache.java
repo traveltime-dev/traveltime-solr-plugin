@@ -10,7 +10,7 @@ public class FuzzyTimeFilterRequestCache extends RequestCache<TimeFilterQueryPar
    private Map<String, String> args;
 
    @Override
-   public Object init(Map args, Object persistence, CacheRegenerator regenerator) {
+   public Object init(Map<String, String> args, Object persistence, CacheRegenerator regenerator) {
       this.args = args;
       return super.init(args, persistence, regenerator);
    }

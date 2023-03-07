@@ -140,15 +140,16 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
             float score = travelTime == -1 ? 0.0f : (float) (boost * (limitAsDouble / (limitAsDouble + travelTime)));
 
             Coordinates queryOrigin = params.getOrigin();
-            return Explanation.match(score,
-                                     params.getTransportMode() + " score, computed as, when present, boost * limit / (limit + travelTime), otherwise 0.0, from:",
-                                     Explanation.match(boost, "weight"),
-                                     Explanation.match(limit, "maximum travel time"),
-                                     Explanation.match(queryOrigin.getLat(), "query lat"),
-                                     Explanation.match(queryOrigin.getLng(), "query lon"),
-                                     Explanation.match(documentLat, "document lat"),
-                                     Explanation.match(documentLon, "document lon"),
-                                     Explanation.match(travelTime, "travel time")
+            return Explanation.match(
+                  score,
+                  params.getTransportMode() + " score, computed as, when present, boost * limit / (limit + travelTime), otherwise 0.0, from:",
+                  Explanation.match(boost, "weight"),
+                  Explanation.match(limit, "maximum travel time"),
+                  Explanation.match(queryOrigin.getLat(), "query lat"),
+                  Explanation.match(queryOrigin.getLng(), "query lon"),
+                  Explanation.match(documentLat, "document lat"),
+                  Explanation.match(documentLon, "document lon"),
+                  Explanation.match(travelTime, "travel time")
             );
          }
 
