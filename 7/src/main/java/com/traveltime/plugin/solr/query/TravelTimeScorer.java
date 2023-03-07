@@ -36,7 +36,6 @@ class TravelTimeScorer extends Scorer {
    private int doc = -1;
    private final float boost;
    private final NumericDocValues docValues;
-   private final int limit;
    // Stored as a double so conversion from int to double does not have to be
    // done every time the score is calculated.
    private final double limitAsDouble;
@@ -44,7 +43,6 @@ class TravelTimeScorer extends Scorer {
 
    protected TravelTimeScorer(int limit, TravelTimes travelTimes, Weight weight, float boost, NumericDocValues docValues) {
       super(weight);
-      this.limit = limit;
       this.limitAsDouble = limit;
       this.travelTimes = travelTimes;
       this.boost = boost;
