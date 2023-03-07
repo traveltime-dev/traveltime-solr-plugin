@@ -66,7 +66,6 @@ docker exec $IMAGE_NAME \
   | jq '.response.numFound' | xargs test 103821 -eq
 
 DUAL_ARGS="\
-  \
   --data-urlencode walking_field=coords\
   --data-urlencode walking_limit=50\
   --data-urlencode walking_origin=51.509865,-0.118092\
