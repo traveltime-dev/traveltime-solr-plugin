@@ -7,7 +7,7 @@ import org.apache.solr.search.NoOpRegenerator;
 import java.util.Map;
 
 public abstract class RequestCache<P> extends CaffeineCache<P, TravelTimes> {
-   public static String NAME = "traveltime";
+   public static final String NAME = "traveltime";
 
    public abstract TravelTimes getOrFresh(P key);
 

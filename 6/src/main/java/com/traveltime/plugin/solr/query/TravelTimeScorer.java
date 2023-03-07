@@ -32,7 +32,7 @@ import java.io.IOException;
 
 class TravelTimeScorer extends Scorer {
 
-   private DocIdSetIterator it;
+   private final DocIdSetIterator it;
    private int doc = -1;
    private final float queryWeight;
    private final NumericDocValues docValues;

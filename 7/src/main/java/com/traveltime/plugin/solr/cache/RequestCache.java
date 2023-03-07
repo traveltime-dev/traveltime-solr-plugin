@@ -7,7 +7,7 @@ import org.apache.solr.util.SolrPluginUtils;
 import java.util.Map;
 
 public abstract class RequestCache<P> extends FastLRUCache<P, TravelTimes> {
-   public static String NAME = "traveltime";
+   public static final String NAME = "traveltime";
 
    public abstract TravelTimes getOrFresh(P key);
 
