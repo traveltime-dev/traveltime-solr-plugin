@@ -1,21 +1,23 @@
-package com.traveltime.plugin.solr.query;
+package com.traveltime.plugin.solr.query.timefilter;
 
 import com.traveltime.plugin.solr.fetcher.Fetcher;
+import com.traveltime.plugin.solr.query.ParamSource;
+import com.traveltime.plugin.solr.query.TraveltimeSearchQuery;
 import lombok.val;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.QParser;
 import org.apache.solr.search.SyntaxError;
 
-public class TraveltimeQueryParser extends QParser {
+public class TimeFilterQueryParser extends QParser {
    private static final String WEIGHT = "weight";
 
-   private final Fetcher<TraveltimeQueryParameters> fetcher;
+   private final Fetcher<TimeFilterQueryParameters> fetcher;
    private final String cacheName;
    private final boolean isFilteringDisabled;
    private final String paramPrefix;
 
-   public TraveltimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, Fetcher<TraveltimeQueryParameters> fetcher, String cacheName, boolean isFilteringDisabled, String paramPrefix) {
+   public TimeFilterQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, Fetcher<TimeFilterQueryParameters> fetcher, String cacheName, boolean isFilteringDisabled, String paramPrefix) {
       super(qstr, localParams, params, req);
       this.fetcher = fetcher;
       this.cacheName = cacheName;
@@ -24,7 +26,7 @@ public class TraveltimeQueryParser extends QParser {
    }
 
    @Override
-   public TraveltimeSearchQuery<TraveltimeQueryParameters> parse() throws SyntaxError {
+   public TraveltimeSearchQuery<TimeFilterQueryParameters> parse() throws SyntaxError {
       ParamSource paramSource = new ParamSource(paramPrefix, localParams, params);
       float weight;
       try {
@@ -38,7 +40,7 @@ public class TraveltimeQueryParser extends QParser {
          throw new SyntaxError("Traveltime weight must be between 0 and 1");
       }
 
-      val params = TraveltimeQueryParameters.parse(req.getSchema(), paramSource);
+      val params = TimeFilterQueryParameters.parse(req.getSchema(), paramSource);
       return new TraveltimeSearchQuery<>(params, weight, fetcher, cacheName, isFilteringDisabled);
    }
 
