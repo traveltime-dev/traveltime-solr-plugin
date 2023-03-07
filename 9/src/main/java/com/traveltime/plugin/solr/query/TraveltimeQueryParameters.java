@@ -37,7 +37,7 @@ public class TraveltimeQueryParameters implements QueryParams {
 
    private static <T> T findByNameOrError(String what, String name, Function<String, Optional<T>> finder) {
       val result = finder.apply(name);
-      if (!result.isPresent()) {
+      if (result.isEmpty()) {
          throw new IllegalArgumentException(String.format("Couldn't find a %s with the name %s", what, name));
       } else {
          return result.get();
