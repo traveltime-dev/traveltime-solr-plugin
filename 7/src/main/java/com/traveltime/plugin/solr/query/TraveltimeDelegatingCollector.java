@@ -1,10 +1,9 @@
 package com.traveltime.plugin.solr.query;
 
-
-import com.traveltime.plugin.solr.ProtoFetcher;
 import com.traveltime.plugin.solr.cache.RequestCache;
 import com.traveltime.plugin.solr.cache.TravelTimes;
 import com.traveltime.plugin.solr.cache.UnprotectedTimes;
+import com.traveltime.plugin.solr.fetcher.Fetcher;
 import com.traveltime.plugin.solr.util.Util;
 import com.traveltime.sdk.dto.common.Coordinates;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
@@ -25,7 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TraveltimeDelegatingCollector extends DelegatingCollector {
+public class TraveltimeDelegatingCollector<Params extends QueryParams> extends DelegatingCollector {
    private final LeafReaderContext[] contexts;
    private final int[] contextBaseStart;
    private final int[] contextBaseEnd;
@@ -33,18 +32,18 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
    private final int maxDoc;
    private final Int2FloatOpenHashMap score;
    private final FixedBitSet collectedGlobalDocs;
-   private final TraveltimeQueryParameters params;
+   private final Params params;
    private final float scoreWeight;
    private final Int2ObjectOpenHashMap<Coordinates> globalDoc2Coords;
-   private final ProtoFetcher fetcher;
-   private final RequestCache cache;
+   private final Fetcher<Params> fetcher;
+   private final RequestCache<Params> cache;
    private final boolean isFilteringDisabled;
 
    private Object2IntOpenHashMap<Coordinates> pointToTime;
    private SortedNumericDocValues coords;
 
 
-   public TraveltimeDelegatingCollector(int maxDoc, int segments, TraveltimeQueryParameters params, float scoreWeight, ProtoFetcher fetcher, RequestCache cache, boolean isFilteringDisabled) {
+   public TraveltimeDelegatingCollector(int maxDoc, int segments, Params params, float scoreWeight, Fetcher<Params> fetcher, RequestCache<Params> cache, boolean isFilteringDisabled) {
       this.maxDoc = maxDoc;
       this.contexts = new LeafReaderContext[segments];
       this.contextBaseStart = new int[segments];
@@ -60,7 +59,7 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
    }
 
    @Override
-   protected void  doSetNextReader(LeafReaderContext context) throws IOException {
+   protected void doSetNextReader(LeafReaderContext context) throws IOException {
       contexts[context.ord] = context;
 
       contextBaseStart[context.ord] = context.docBase;
@@ -94,7 +93,7 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
          cachedResults = new UnprotectedTimes();
       }
 
-      val nonCachedSet = cachedResults.nonCached(params.getLimit(), coords);
+      val nonCachedSet = cachedResults.nonCached(params.getTravelTime(), coords);
 
       ArrayList<Coordinates> destinations = new ArrayList<>(nonCachedSet);
 
@@ -102,18 +101,12 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
       if (destinations.size() == 0) {
          times = new ArrayList<>();
       } else {
-         times = fetcher.getTimes(
-               params.getOrigin(),
-               destinations,
-               params.getLimit(),
-               params.getMode(),
-               params.getCountry()
-         );
+         times = fetcher.getTimes(params, destinations);
       }
 
-      cachedResults.putAll(params.getLimit(), destinations, times);
+      cachedResults.putAll(params.getTravelTime(), destinations, times);
 
-      return cachedResults.mapToTimes(params.getLimit(), coords);
+      return cachedResults.mapToTimes(params.getTravelTime(), coords);
    }
 
    @Override
@@ -163,8 +156,8 @@ public class TraveltimeDelegatingCollector extends DelegatingCollector {
 
       @Override
       public float score() {
-         int limit = params.getLimit();
-         int time = pointToTime.getOrDefault(globalDoc2Coords.get(docID()), params.getLimit() + 1);
+         int limit = params.getTravelTime();
+         int time = pointToTime.getOrDefault(globalDoc2Coords.get(docID()), params.getTravelTime() + 1);
          float ttScore = (float) (limit - time + 1) / (limit + 1);
          return (1f - scoreWeight) * score.get(docID()) + scoreWeight * ttScore;
       }

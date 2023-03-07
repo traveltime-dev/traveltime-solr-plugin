@@ -4,17 +4,17 @@ import com.traveltime.plugin.solr.cache.RequestCache;
 import lombok.val;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.solr.common.SolrException;
-import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
 import org.apache.solr.search.ValueSourceParser;
 
-import static com.traveltime.plugin.solr.TraveltimeQParserPlugin.PARAM_PREFIX;
+import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
 
 public class TraveltimeValueSourceParser extends ValueSourceParser {
    private String cacheName = RequestCache.NAME;
+
    private String paramPrefix = PARAM_PREFIX;
 
    @Override
@@ -27,19 +27,11 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
       if (prefix != null) paramPrefix = prefix.toString();
    }
 
-   private String getParam(SolrParams params, String name) throws SyntaxError {
-      String param = params.get(paramPrefix + name);
-      if (param != null) return param;
-      param = params.get(name);
-      if (param != null) return param;
-      throw new SyntaxError("missing " + name + " parameter for TravelTime value source");
-   }
-
-
    @Override
    public ValueSource parse(FunctionQParser fp) throws SyntaxError {
       SolrQueryRequest req = fp.getReq();
-      RequestCache cache = (RequestCache) req.getSearcher().getCache(cacheName);
+      RequestCache<TraveltimeQueryParameters> cache = (RequestCache<TraveltimeQueryParameters>) req.getSearcher()
+                                                                                                   .getCache(cacheName);
       if (cache == null) {
          throw new SolrException(
                SolrException.ErrorCode.BAD_REQUEST,
@@ -47,18 +39,10 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
          );
       }
 
-      SolrParams params = fp.getParams();
-
-
-      val queryParameters = TraveltimeQueryParameters.fromStrings(
+      val queryParameters = TraveltimeQueryParameters.parse(
             req.getSchema(),
-            getParam(params, TraveltimeQueryParameters.FIELD),
-            getParam(params, TraveltimeQueryParameters.ORIGIN),
-            getParam(params, TraveltimeQueryParameters.LIMIT),
-            getParam(params, TraveltimeQueryParameters.MODE),
-            getParam(params, TraveltimeQueryParameters.COUNTRY)
+            new ParamSource(paramPrefix, fp.getParams())
       );
-
-      return new TraveltimeValueSource(queryParameters, cache.getOrFresh(queryParameters));
+      return new TraveltimeValueSource<>(queryParameters, cache.getOrFresh(queryParameters));
    }
 }

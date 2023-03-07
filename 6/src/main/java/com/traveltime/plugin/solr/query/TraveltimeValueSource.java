@@ -17,8 +17,8 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TraveltimeValueSource extends ValueSource {
-   private final TraveltimeQueryParameters params;
+public class TraveltimeValueSource<Params extends QueryParams> extends ValueSource {
+   private final Params params;
    @EqualsAndHashCode.Exclude
    private final TravelTimes cache;
 

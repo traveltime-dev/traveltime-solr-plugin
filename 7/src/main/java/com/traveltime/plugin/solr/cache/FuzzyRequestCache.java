@@ -5,7 +5,7 @@ import org.apache.solr.search.CacheRegenerator;
 
 import java.util.Map;
 
-public class FuzzyRequestCache extends RequestCache {
+public class FuzzyRequestCache extends RequestCache<TraveltimeQueryParameters> {
    private final Object[] lock = new Object[0];
    private Map<String, String> args;
 

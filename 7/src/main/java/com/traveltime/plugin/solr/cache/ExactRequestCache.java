@@ -2,7 +2,7 @@ package com.traveltime.plugin.solr.cache;
 
 import com.traveltime.plugin.solr.query.TraveltimeQueryParameters;
 
-public class ExactRequestCache extends RequestCache {
+public class ExactRequestCache extends RequestCache<TraveltimeQueryParameters> {
    private final Object[] lock = new Object[0];
 
    @Override

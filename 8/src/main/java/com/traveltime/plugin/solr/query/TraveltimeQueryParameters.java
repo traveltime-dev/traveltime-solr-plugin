@@ -57,13 +57,15 @@ public class TraveltimeQueryParameters implements QueryParams {
 
       val origin = Util.toGeoPoint(params.getParam(TraveltimeQueryParameters.ORIGIN));
 
-      val mode = findByNameOrError("transportation mode",
-                                   params.getParam(TraveltimeQueryParameters.MODE),
-                                   Util::findModeByName
+      val mode = findByNameOrError(
+            "transportation mode",
+            params.getParam(TraveltimeQueryParameters.MODE),
+            Util::findModeByName
       );
-      val country = findByNameOrError("country",
-                                      params.getParam(TraveltimeQueryParameters.COUNTRY),
-                                      Util::findCountryByName
+      val country = findByNameOrError(
+            "country",
+            params.getParam(TraveltimeQueryParameters.COUNTRY),
+            Util::findCountryByName
       );
 
       int limit;

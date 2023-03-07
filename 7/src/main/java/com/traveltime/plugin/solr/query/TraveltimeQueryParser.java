@@ -1,6 +1,6 @@
 package com.traveltime.plugin.solr.query;
 
-import com.traveltime.plugin.solr.ProtoFetcher;
+import com.traveltime.plugin.solr.fetcher.Fetcher;
 import lombok.val;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.request.SolrQueryRequest;
@@ -10,12 +10,12 @@ import org.apache.solr.search.SyntaxError;
 public class TraveltimeQueryParser extends QParser {
    private static final String WEIGHT = "weight";
 
-   private final ProtoFetcher fetcher;
+   private final Fetcher<TraveltimeQueryParameters> fetcher;
    private final String cacheName;
    private final boolean isFilteringDisabled;
    private final String paramPrefix;
 
-   public TraveltimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, ProtoFetcher fetcher, String cacheName, boolean isFilteringDisabled, String paramPrefix) {
+   public TraveltimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, Fetcher<TraveltimeQueryParameters> fetcher, String cacheName, boolean isFilteringDisabled, String paramPrefix) {
       super(qstr, localParams, params, req);
       this.fetcher = fetcher;
       this.cacheName = cacheName;
@@ -23,26 +23,12 @@ public class TraveltimeQueryParser extends QParser {
       this.paramPrefix = paramPrefix;
    }
 
-   private String getBestParam(String name) throws SyntaxError {
-      String param;
-      if (localParams != null) {
-         param = localParams.get(name);
-         if (param != null) return param;
-         param = localParams.get(paramPrefix + name);
-         if (param != null) return param;
-      }
-      param = params.get(paramPrefix + name);
-      if (param != null) return param;
-      param = params.get(name);
-      if (param != null) return param;
-      throw new SyntaxError("missing " + name + " parameter for TravelTime request");
-   }
-
    @Override
-   public TraveltimeSearchQuery parse() throws SyntaxError {
+   public TraveltimeSearchQuery<TraveltimeQueryParameters> parse() throws SyntaxError {
+      ParamSource paramSource = new ParamSource(paramPrefix, localParams, params);
       float weight;
       try {
-         weight = Float.parseFloat(getBestParam(WEIGHT));
+         weight = Float.parseFloat(paramSource.getParam(WEIGHT));
       } catch (SyntaxError ignored) {
          weight = 0f;
       } catch (NumberFormatException e) {
@@ -52,15 +38,8 @@ public class TraveltimeQueryParser extends QParser {
          throw new SyntaxError("Traveltime weight must be between 0 and 1");
       }
 
-      val params = TraveltimeQueryParameters.fromStrings(
-            req.getSchema(),
-            getBestParam(TraveltimeQueryParameters.FIELD),
-            getBestParam(TraveltimeQueryParameters.ORIGIN),
-            getBestParam(TraveltimeQueryParameters.LIMIT),
-            getBestParam(TraveltimeQueryParameters.MODE),
-            getBestParam(TraveltimeQueryParameters.COUNTRY)
-      );
-      return new TraveltimeSearchQuery(params, weight, fetcher, cacheName, isFilteringDisabled);
+      val params = TraveltimeQueryParameters.parse(req.getSchema(), paramSource);
+      return new TraveltimeSearchQuery<>(params, weight, fetcher, cacheName, isFilteringDisabled);
    }
 
 }
