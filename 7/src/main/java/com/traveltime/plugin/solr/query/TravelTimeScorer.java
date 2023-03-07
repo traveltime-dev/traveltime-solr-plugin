@@ -71,34 +71,6 @@ class TravelTimeScorer extends Scorer {
       return travelTime == -1.0 ? 0.0f : (float) (boost * (limitAsDouble / (limitAsDouble + travelTime)));
    }
 
-   /**
-    * Inverting the score computation is very hard due to all potential
-    * rounding errors, so we binary search the maximum travel time. The
-    * limit is set to 1 second.
-    */
-   private int computeMaxTravelTime(float minScore, int previousMaxTravelTime) {
-      assert score(0) >= minScore;
-      if (score(previousMaxTravelTime) >= minScore) {
-         // minScore did not decrease enough to require an update to the max travel time
-         return previousMaxTravelTime;
-      }
-      assert score(previousMaxTravelTime) < minScore;
-      int min = 0, max = previousMaxTravelTime;
-      // invariant: score(min) >= minScore && score(max) < minScore
-      while (max - min > 1) {
-         int mid = (min + max) / 2;
-         float score = score(mid);
-         if (score >= minScore) {
-            min = mid;
-         } else {
-            max = mid;
-         }
-      }
-      assert score(min) >= minScore;
-      assert min == limit || score(min + 1) < minScore;
-      return min;
-   }
-
    @Override
    public float score() throws IOException {
       long encodedDocumentCoordinate = docValues.longValue();
