@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-//Only for use within TraveltimeDelegatingCollector if no cache is set up
+//Only for use within TravelTimeDelegatingCollector if no cache is set up
 public class UnprotectedTimes extends TravelTimes {
    private final Object2IntOpenHashMap<Coordinates> coordsToTimes = new Object2IntOpenHashMap<>();
 

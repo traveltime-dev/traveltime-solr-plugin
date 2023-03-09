@@ -1,11 +1,11 @@
 # traveltime-solr-plugin
-Plugin for Solr that allows users to filter locations using the Traveltime API.
+Plugin for Solr that allows users to filter locations using the TravelTime API.
 
 ## Installation & configuration
 This is a standard Solr plugin.
 The plugin jar must be copied into the [solr lib directory](https://solr.apache.org/guide/8_4/libs.html#lib-directories)
 
-To use the plugin you **must** add a `queryParser` with the class `com.traveltime.plugin.solr.TraveltimeQParserPlugin` or
+To use the plugin you **must** add a `queryParser` with the class `com.traveltime.plugin.solr.TravelTimeQParserPlugin` or
 `com.traveltime.plugin.solr.TimeFilterQParserPlugin` (currently only available for solar version 8).
 This query parser has two mandatory string configuration options:
 - `app_id`: this is you API app id.
@@ -14,7 +14,7 @@ This query parser has two mandatory string configuration options:
 The `TimeFilterQParserPlugin` has an optional integer field `location_limit` which represents the maximum amount of locations
 that can be sent in a single request. Defaults to 2000, only increase this parameter if you API plan supports larger requests.
 ```xml
-<queryParser name="traveltime" class="com.traveltime.plugin.solr.TraveltimeQParserPlugin">
+<queryParser name="traveltime" class="com.traveltime.plugin.solr.TravelTimeQParserPlugin">
   <str name="app_id">your_app_id_here</str>
   <str name="api_key">your_api_key_here</str>
 </queryParser>
@@ -47,7 +47,7 @@ The query accepts the following (mandatory) configuration options:
 - `origin`: the point from which travel time will be measured. The accepted formats are:
     - `"lat,lon"` string
     - geohash
-- `field`: the document field that will be used as the destination in the Traveltime query.
+- `field`: the document field that will be used as the destination in the TravelTime query.
 - `limit`: the travel time limit in seconds. Must be non-negative.
 - `mode`: Transportation mode used in the search. One of: `pt`, `walking+ferry`, `cycling+ferry`, `driving+ferry`.
 - `country`: Country that the `origin` is in. Currently may only be one of: `uk`, `nl`, `at`, `be`, `de`, `fr`, `ie`, `lt`.
@@ -57,7 +57,7 @@ If a parameter is specified in both ways, the local parameter takes precedence.
 
 ## Querying data using json time-filter requests
 The query accepts the following configuration options:
-- `field`: the document field that will be used as the destination in the Traveltime query.
+- `field`: the document field that will be used as the destination in the TravelTime query.
 - `travel_time`: the travel time limit in seconds. Must be non-negative.
 - For arrival searches:
   - `arrival_time`: arrival time in ISO8601
@@ -67,9 +67,9 @@ The query accepts the following configuration options:
   - `departure_time`: departure time in ISO8601
   - `departure_location`: string containing a JSON object with `lat` and `lng` keys describing the coordinates
     of the departure location
-- `transportation`: a string containing a JSON object describing the transportation mode as defined by the Traveltime API:
+- `transportation`: a string containing a JSON object describing the transportation mode as defined by the TravelTime API:
   https://docs.traveltime.com/api/reference/travel-time-distance-matrix#departure_searches-transportation
-- (optional) `range`: : a string containing a JSON object describing the range search as defined by the Traveltime API:
+- (optional) `range`: : a string containing a JSON object describing the range search as defined by the TravelTime API:
   https://docs.traveltime.com/api/reference/travel-time-distance-matrix#departure_searches-range
 
 An example query using `curl`:
@@ -105,4 +105,4 @@ Therefore, changing any of the parameters will result in a cache miss.
 This is recommended if the cache is only needed to display the times in search results, or if the query parameters are mostly static.
 
 `FuzzyRequestCache` uses only the `origin` and `mode` fields as cache keys.
-This cache is useful for workloads where the set of possible `origin` parameters is limited since it will limit the amount of API calls needed to fetch data from Traveltime. The `secondary_size` controls the size of each per-origin traveltime cache. It should be set to at least the number of documents returned by each query.
+This cache is useful for workloads where the set of possible `origin` parameters is limited since it will limit the amount of API calls needed to fetch data from TravelTime. The `secondary_size` controls the size of each per-origin traveltime cache. It should be set to at least the number of documents returned by each query.

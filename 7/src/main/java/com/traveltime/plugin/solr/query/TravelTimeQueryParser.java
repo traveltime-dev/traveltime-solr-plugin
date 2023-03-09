@@ -7,15 +7,15 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.QParser;
 import org.apache.solr.search.SyntaxError;
 
-public class TraveltimeQueryParser extends QParser {
+public class TravelTimeQueryParser extends QParser {
    private static final String WEIGHT = "weight";
 
-   private final Fetcher<TraveltimeQueryParameters> fetcher;
+   private final Fetcher<TravelTimeQueryParameters> fetcher;
    private final String cacheName;
    private final boolean isFilteringDisabled;
    private final String paramPrefix;
 
-   public TraveltimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, Fetcher<TraveltimeQueryParameters> fetcher, String cacheName, boolean isFilteringDisabled, String paramPrefix) {
+   public TravelTimeQueryParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req, Fetcher<TravelTimeQueryParameters> fetcher, String cacheName, boolean isFilteringDisabled, String paramPrefix) {
       super(qstr, localParams, params, req);
       this.fetcher = fetcher;
       this.cacheName = cacheName;
@@ -24,7 +24,7 @@ public class TraveltimeQueryParser extends QParser {
    }
 
    @Override
-   public TraveltimeSearchQuery<TraveltimeQueryParameters> parse() throws SyntaxError {
+   public TravelTimeSearchQuery<TravelTimeQueryParameters> parse() throws SyntaxError {
       ParamSource paramSource = new ParamSource(paramPrefix, localParams, params);
       float weight;
       try {
@@ -35,11 +35,11 @@ public class TraveltimeQueryParser extends QParser {
          throw new SyntaxError("Couldn't parse traveltime weight as a float");
       }
       if (weight < 0 || weight > 1) {
-         throw new SyntaxError("Traveltime weight must be between 0 and 1");
+         throw new SyntaxError("TravelTime weight must be between 0 and 1");
       }
 
-      val params = TraveltimeQueryParameters.parse(req.getSchema(), paramSource);
-      return new TraveltimeSearchQuery<>(params, weight, fetcher, cacheName, isFilteringDisabled);
+      val params = TravelTimeQueryParameters.parse(req.getSchema(), paramSource);
+      return new TravelTimeSearchQuery<>(params, weight, fetcher, cacheName, isFilteringDisabled);
    }
 
 }

@@ -2,7 +2,7 @@ package com.traveltime.plugin.solr.query.timefilter;
 
 import com.traveltime.plugin.solr.cache.RequestCache;
 import com.traveltime.plugin.solr.query.ParamSource;
-import com.traveltime.plugin.solr.query.TraveltimeValueSource;
+import com.traveltime.plugin.solr.query.TravelTimeValueSource;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.util.NamedList;
@@ -44,6 +44,6 @@ public class TimeFilterValueSourceParser extends ValueSourceParser {
             req.getSchema(),
             new ParamSource(paramPrefix, fp.getParams())
       );
-      return new TraveltimeValueSource<>(queryParams, cache.getOrFresh(queryParams));
+      return new TravelTimeValueSource<>(queryParams, cache.getOrFresh(queryParams));
    }
 }

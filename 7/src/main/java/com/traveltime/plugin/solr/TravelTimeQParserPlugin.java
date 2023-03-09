@@ -2,7 +2,7 @@ package com.traveltime.plugin.solr;
 
 import com.traveltime.plugin.solr.cache.RequestCache;
 import com.traveltime.plugin.solr.fetcher.ProtoFetcherSingleton;
-import com.traveltime.plugin.solr.query.TraveltimeQueryParser;
+import com.traveltime.plugin.solr.query.TravelTimeQueryParser;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.request.SolrQueryRequest;
@@ -13,7 +13,7 @@ import java.net.URI;
 
 import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
 
-public class TraveltimeQParserPlugin extends QParserPlugin {
+public class TravelTimeQParserPlugin extends QParserPlugin {
    private String cacheName = RequestCache.NAME;
    private boolean isFilteringDisabled = false;
    private String paramPrefix = PARAM_PREFIX;
@@ -40,7 +40,7 @@ public class TraveltimeQParserPlugin extends QParserPlugin {
 
    @Override
    public QParser createParser(String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req) {
-      return new TraveltimeQueryParser(
+      return new TravelTimeQueryParser(
             qstr,
             localParams,
             params,
