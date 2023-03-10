@@ -88,6 +88,26 @@ curl
 The configuration options may be passed as local query parameters, or as raw query parameters prefixed with `"traveltime_"`.
 If a parameter is specified in both ways, the local parameter takes precedence.
 
+## Multiple traveltime queries in the same request
+
+You can issue multiple traveltime queries in the same request (for example to retrieve both driving and public transport travel times).
+To achieve this a configuration option of `prefix` is available. This allows you to specify a parameter key prefix different than `traveltime_`.
+For example, for plugins configured with the prefix `driving_` and `walking_` you can specify the following query parameters:
+```
+driving_origin="51.536067,-0.153596"
+driving_field=coords
+driving_limit=900
+driving_mode=driving
+driving_country=uk
+
+walking_origin="51.536067,-0.153596"
+walking_field=coords
+walking_limit=1200
+walking_mode=walking
+walking_country=uk
+```
+
+
 ## Displaying travel times
 
 To display the travel times you must configure the `valueSourceParser` and `cache`.
