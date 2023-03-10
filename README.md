@@ -6,8 +6,13 @@ This is a standard Solr plugin.
 The plugin jar must be copied into the [solr lib directory](https://solr.apache.org/guide/8_4/libs.html#lib-directories)
 
 To use the plugin you **must** add a `queryParser` with the class `com.traveltime.plugin.solr.TravelTimeQParserPlugin` or
-`com.traveltime.plugin.solr.TimeFilterQParserPlugin` (currently only available for solar version 8).
-This query parser has two mandatory string configuration options:
+`com.traveltime.plugin.solr.TimeFilterQParserPlugin`.
+The `TravelTimeQParserPlugin` uses the [Travel Time Matrix Fast (Proto)](https://docs.traveltime.com/api/reference/travel-time-distance-matrix-proto) endpoint.
+This is the recommended way to use our plugin due to its very low latency and high location volume per request.
+The `TimeFilterQParserPlugin` uses the [Travel Time Matrix (Time Filter)](https://docs.traveltime.com/api/reference/travel-time-distance-matrix) endpoint.
+This is more configurable and supports more countries.
+
+These query parsers has two mandatory string configuration options:
 - `app_id`: this is you API app id.
 - `api_key`: this is the api key that corresponds to the app id.
 
@@ -20,24 +25,16 @@ that can be sent in a single request. Defaults to 2000, only increase this param
 </queryParser>
 ```
 
-To display the travel times returned by the TravelTime API you must configure two more components: a `valueSourceParser`:
+To display the travel times returned by the TravelTime API you must configure two more components: a `valueSourceParser`, one of:
 ```xml
 <valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.TravelTimeValueSourceParser" />
-```
-or, if using `TimeFilterQParserPlugin`
-```xml
 <valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.timefilter.TimeFilterValueSourceParser" />
 ```
-and a `cache`:
+and a `cache`, one of:
 ```xml
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.ExactRequestCache"/>
-or
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.ExactTimeFilterRequestCache"/>
-```
-or
-```xml
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyRequestCache" secondary_size="50000"/>
-or
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyTimeFilterRequestCache" secondary_size="50000"/>
 ```
 
