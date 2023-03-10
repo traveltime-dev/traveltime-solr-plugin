@@ -95,6 +95,18 @@ When configured, the time can be accessed using the `fl` parameter: `?fl=time:tr
 The `valueSourceParser` accepts the same parameters as a query, but only in the raw query parameter form.
 If no travel time is found in the cache it will be returned as `-1`.
 
+## Scoring
+
+There are two ways a traveltime query can influence the score of a document.
+1. Filter query score:
+if the query is used as a filter query you can specify an additional `weight` parameter that is a floating point number between 1 and 0.
+The new document score will be computed as `(1 - weight) * query score + weight * traveltime score`.
+`traveltime score` is computed as `(limit - time + 1) / (limit + 1)`, so the output is between `0` and `1`, where unreachable points get a score of `0` and points with a travel time of `0` get a score of 1.
+2. Query score:
+To use traveltime in a regular query (`q={!traveltime}`) you must also use it in a filter query along with a cache.
+After that you can use it in scoring as any other query. The score is computed as `limit / (limit + time)` if the point is reachable, `0` otherwise.
+This produces a score in the range of `[0.5, 1]` for reachable points, with short traveltimes getting a relatively higher score.
+
 ## Request caches
 
 Request caches can be used to enable the `valueSourceParser` and to reduce request latency for some workloads.
