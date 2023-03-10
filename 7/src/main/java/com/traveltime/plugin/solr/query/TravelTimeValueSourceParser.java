@@ -12,7 +12,7 @@ import org.apache.solr.search.ValueSourceParser;
 
 import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
 
-public class TraveltimeValueSourceParser extends ValueSourceParser {
+public class TravelTimeValueSourceParser extends ValueSourceParser {
    private String cacheName = RequestCache.NAME;
 
    private String paramPrefix = PARAM_PREFIX;
@@ -30,7 +30,7 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
    @Override
    public ValueSource parse(FunctionQParser fp) throws SyntaxError {
       SolrQueryRequest req = fp.getReq();
-      RequestCache<TraveltimeQueryParameters> cache = (RequestCache<TraveltimeQueryParameters>) req.getSearcher()
+      RequestCache<TravelTimeQueryParameters> cache = (RequestCache<TravelTimeQueryParameters>) req.getSearcher()
                                                                                                    .getCache(cacheName);
       if (cache == null) {
          throw new SolrException(
@@ -39,10 +39,10 @@ public class TraveltimeValueSourceParser extends ValueSourceParser {
          );
       }
 
-      val queryParameters = TraveltimeQueryParameters.parse(
+      val queryParameters = TravelTimeQueryParameters.parse(
             req.getSchema(),
             new ParamSource(paramPrefix, fp.getParams())
       );
-      return new TraveltimeValueSource<>(queryParameters, cache.getOrFresh(queryParameters));
+      return new TravelTimeValueSource<>(queryParameters, cache.getOrFresh(queryParameters));
    }
 }

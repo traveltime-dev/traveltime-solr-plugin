@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 @Data
-public class TraveltimeQueryParameters implements QueryParams {
+public class TravelTimeQueryParameters implements QueryParams {
    private final String field;
    private final Coordinates origin;
    private final int limit;
@@ -44,33 +44,33 @@ public class TraveltimeQueryParameters implements QueryParams {
       }
    }
 
-   public static TraveltimeQueryParameters parse(
+   public static TravelTimeQueryParameters parse(
          IndexSchema schema,
          ParamSource params
    ) throws SyntaxError {
-      String field = params.getParam(TraveltimeQueryParameters.FIELD);
+      String field = params.getParam(TravelTimeQueryParameters.FIELD);
 
       val fieldType = schema.getField(field);
       if (!(fieldType.getType() instanceof LatLonPointSpatialField)) {
          throw new SyntaxError("field[" + field + "] is not a LatLonPointSpatialField");
       }
 
-      val origin = Util.toGeoPoint(params.getParam(TraveltimeQueryParameters.ORIGIN));
+      val origin = Util.toGeoPoint(params.getParam(TravelTimeQueryParameters.ORIGIN));
 
       val mode = findByNameOrError(
             "transportation mode",
-            params.getParam(TraveltimeQueryParameters.MODE),
+            params.getParam(TravelTimeQueryParameters.MODE),
             Util::findModeByName
       );
       val country = findByNameOrError(
             "country",
-            params.getParam(TraveltimeQueryParameters.COUNTRY),
+            params.getParam(TravelTimeQueryParameters.COUNTRY),
             Util::findCountryByName
       );
 
       int limit;
       try {
-         limit = Integer.parseInt(params.getParam(TraveltimeQueryParameters.LIMIT));
+         limit = Integer.parseInt(params.getParam(TravelTimeQueryParameters.LIMIT));
       } catch (NumberFormatException e) {
          throw new SyntaxError("Couldn't parse traveltime limit as an integer");
       }
@@ -78,7 +78,7 @@ public class TraveltimeQueryParameters implements QueryParams {
          throw new SyntaxError("traveltime limit must be > 0");
       }
 
-      return new TraveltimeQueryParameters(field, origin, limit, mode, country);
+      return new TravelTimeQueryParameters(field, origin, limit, mode, country);
    }
 
    @Override

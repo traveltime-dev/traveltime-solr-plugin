@@ -30,7 +30,6 @@ import lombok.EqualsAndHashCode;
 import org.apache.lucene.geo.GeoEncodingUtils;
 import org.apache.lucene.index.*;
 import org.apache.lucene.search.*;
-import org.apache.lucene.util.Bits;
 import org.apache.solr.search.DelegatingCollector;
 import org.apache.solr.search.ExtendedQueryBase;
 import org.apache.solr.search.PostFilter;
@@ -41,7 +40,7 @@ import java.util.Set;
 
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQueryBase implements PostFilter {
+public class TravelTimeSearchQuery<Params extends QueryParams> extends ExtendedQueryBase implements PostFilter {
    private final Params params;
    private final float weight;
    private final Fetcher<Params> fetcher;
@@ -50,7 +49,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
 
    @Override
    public String toString(String field) {
-      return String.format("TraveltimeSearchQuery(params = %s)", params);
+      return String.format("TravelTimeSearchQuery(params = %s)", params);
    }
 
    @Override
@@ -59,7 +58,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
       RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
       int maxDoc = searcher.maxDoc();
       int leafCount = searcher.getTopReaderContext().leaves().size();
-      return new TraveltimeDelegatingCollector<>(
+      return new TravelTimeDelegatingCollector<>(
             maxDoc,
             leafCount,
             params,
@@ -98,18 +97,19 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
    }
 
    @Override
-   public Weight createWeight(IndexSearcher indexSearcher, boolean needsScores) {
+   public Weight createWeight(IndexSearcher indexSearcher, ScoreMode scoreMode, float boost) {
       SolrIndexSearcher searcher = (SolrIndexSearcher) indexSearcher;
       RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
       TravelTimes travelTimes = cache.get(params);
       return new Weight(this) {
 
-         private float norm = 1f;
-         private float boost = 1f;
-
          private final int limit = params.getTravelTime();
          private final double limitAsDouble = limit;
 
+         @Override
+         public boolean isCacheable(LeafReaderContext ctx) {
+            return false;
+         }
 
          @Override
          public void extractTerms(Set<Term> terms) {
@@ -118,8 +118,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
          @Override
          public Explanation explain(LeafReaderContext context, int doc) throws IOException {
             SortedNumericDocValues multiDocValues = DocValues.getSortedNumeric(context.reader(), params.getField());
-            multiDocValues.setDocument(doc);
-            if (multiDocValues.count() != 0) {
+            if (!multiDocValues.advanceExact(doc)) {
                return Explanation.noMatch("Document " + doc + " doesn't have a value for field " + params.getField());
             }
             long encodedDocumentCoordinate = selectValue(multiDocValues);
@@ -138,38 +137,25 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
             // for travel times. Travel times at or near the limit will get a
             // score significantly better than unavailable travel times:
             // >= 0.5 versus 0.0.
-            float score = travelTime == -1 ? 0.0f : (float) (norm * boost * (limitAsDouble / (limitAsDouble + travelTime)));
+            float score = travelTime == -1 ? 0.0f : (float) (boost * (limitAsDouble / (limitAsDouble + travelTime)));
 
             Coordinates queryOrigin = params.getOrigin();
             return Explanation.match(
                   score,
-                  params.getTransportMode() + " score, computed as, when present, norm * boost * limit / (limit + travelTime), otherwise 0.0, from:",
-                  Explanation.match(norm, "norm"),
-                  Explanation.match(boost, "boost"),
+                  params.getTransportMode() + " score, computed as, when present, boost * limit / (limit + travelTime), otherwise 0.0, from:",
+                  Explanation.match(boost, "weight"),
                   Explanation.match(limit, "maximum travel time"),
-                  Explanation.match(queryOrigin.getLat().floatValue(), "query lat"),
-                  Explanation.match(queryOrigin.getLng().floatValue(), "query lon"),
-                  Explanation.match((float) documentLat, "document lat"),
-                  Explanation.match((float) documentLon, "document lon"),
+                  Explanation.match(queryOrigin.getLat(), "query lat"),
+                  Explanation.match(queryOrigin.getLng(), "query lon"),
+                  Explanation.match(documentLat, "document lat"),
+                  Explanation.match(documentLon, "document lon"),
                   Explanation.match(travelTime, "travel time")
             );
          }
 
-         @Override
-         public float getValueForNormalization() {
-            float w = norm * boost;
-            return w * w;
-         }
-
-         @Override
-         public void normalize(float norm, float boost) {
-            this.norm = norm;
-            this.boost = boost;
-         }
-
-         private long selectValue(SortedNumericDocValues multiDocValues) {
-            int count = multiDocValues.count();
-            long value = multiDocValues.valueAt(1);
+         private long selectValue(SortedNumericDocValues multiDocValues) throws IOException {
+            int count = multiDocValues.docValueCount();
+            long value = multiDocValues.nextValue();
             if (count > 1) {
                throw new IllegalStateException("Multi-valued field " + params.getField() + " is not supported");
             }
@@ -183,21 +169,49 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
             }
             return new NumericDocValues() {
 
+               long value;
+
                @Override
-               public long get(int docID) {
-                  multiDocValues.setDocument(docID);
-                  if (multiDocValues.count() != 0) {
-                     return selectValue(multiDocValues);
+               public long longValue() {
+                  return value;
+               }
+
+               @Override
+               public boolean advanceExact(int target) throws IOException {
+                  if (multiDocValues.advanceExact(target)) {
+                     value = selectValue(multiDocValues);
+                     return true;
                   } else {
-                     return -1;
+                     return false;
                   }
                }
+
+               @Override
+               public int docID() {
+                  return multiDocValues.docID();
+               }
+
+               @Override
+               public int nextDoc() throws IOException {
+                  return multiDocValues.nextDoc();
+               }
+
+               @Override
+               public int advance(int target) throws IOException {
+                  return multiDocValues.advance(target);
+               }
+
+               @Override
+               public long cost() {
+                  return multiDocValues.cost();
+               }
+
             };
          }
 
          @Override
          public ScorerSupplier scorerSupplier(LeafReaderContext context) throws IOException {
-            PointValues pointValues = context.reader().getPointValues();//(params.getField());
+            PointValues pointValues = context.reader().getPointValues(params.getField());
             if (pointValues == null) {
                // No data on this segment
                return null;
@@ -207,63 +221,27 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
                   params.getField()
             );
             final NumericDocValues docValues = selectValues(multiDocValues);
-            final Bits withField = context.reader().getDocsWithField(params.getField());
-            final int maxDoc = context.reader().maxDoc();
-
 
             final Weight weight = this;
             return new ScorerSupplier() {
 
                @Override
-               public Scorer get(boolean randomAccess) {
+               public Scorer get(long leadCost) {
                   return new TravelTimeScorer(
                         params.getTravelTime(),
                         travelTimes,
                         weight,
-                        norm * boost,
-                        docValues,
-                        new DocIdSetIterator() {
-
-                           private final DocIdSetIterator underlying = DocIdSetIterator.all(maxDoc);
-
-                           @Override
-                           public int docID() {
-                              return underlying.docID();
-                           }
-
-                           @Override
-                           public int nextDoc() throws IOException {
-                              do {
-                                 underlying.nextDoc();
-                              } while (docID() < withField.length() && !withField.get(docID()));
-
-                              if (docID() >= withField.length()) {
-                                 return NO_MORE_DOCS;
-                              }
-
-                              return docID();
-                           }
-
-                           @Override
-                           public int advance(int target) throws IOException {
-                              underlying.advance(target);
-                              if (!withField.get(docID())) {
-                                 nextDoc();
-                              }
-                              return docID();
-                           }
-
-                           @Override
-                           public long cost() {
-                              return 100;
-                           }
-                        }
+                        context.reader().maxDoc(),
+                        leadCost,
+                        boost,
+                        pointValues,
+                        docValues
                   );
                }
 
                @Override
                public long cost() {
-                  return 100;
+                  return docValues.cost();
                }
             };
          }
@@ -274,7 +252,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
             if (scorerSupplier == null) {
                return null;
             }
-            return scorerSupplier.get(false);
+            return scorerSupplier.get(Long.MAX_VALUE);
          }
 
       };

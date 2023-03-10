@@ -18,7 +18,7 @@ import static org.apache.lucene.search.DocIdSetIterator.NO_MORE_DOCS;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TraveltimeValueSource<Params extends QueryParams> extends ValueSource {
+public class TravelTimeValueSource<Params extends QueryParams> extends ValueSource {
    private final Params params;
    @EqualsAndHashCode.Exclude
    private final TravelTimes cache;

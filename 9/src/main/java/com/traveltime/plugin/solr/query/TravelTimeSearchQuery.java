@@ -36,11 +36,10 @@ import org.apache.solr.search.PostFilter;
 import org.apache.solr.search.SolrIndexSearcher;
 
 import java.io.IOException;
-import java.util.Set;
 
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQueryBase implements PostFilter {
+public class TravelTimeSearchQuery<Params extends QueryParams> extends ExtendedQueryBase implements PostFilter {
    private final Params params;
    private final float weight;
    private final Fetcher<Params> fetcher;
@@ -49,7 +48,12 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
 
    @Override
    public String toString(String field) {
-      return String.format("TraveltimeSearchQuery(params = %s)", params);
+      return String.format("TravelTimeSearchQuery(params = %s)", params);
+   }
+
+   @Override
+   public void visit(QueryVisitor visitor) {
+      visitor.visitLeaf(this);
    }
 
    @Override
@@ -58,7 +62,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
       RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
       int maxDoc = searcher.maxDoc();
       int leafCount = searcher.getTopReaderContext().leaves().size();
-      return new TraveltimeDelegatingCollector<>(
+      return new TravelTimeDelegatingCollector<>(
             maxDoc,
             leafCount,
             params,
@@ -88,16 +92,7 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
    }
 
    @Override
-   public boolean getCacheSep() {
-      return false;
-   }
-
-   @Override
-   public void setCacheSep(boolean cacheSep) {
-   }
-
-   @Override
-   public Weight createWeight(IndexSearcher indexSearcher, boolean needsScores, float boost) {
+   public Weight createWeight(IndexSearcher indexSearcher, ScoreMode scoreMode, float boost) {
       SolrIndexSearcher searcher = (SolrIndexSearcher) indexSearcher;
       RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
       TravelTimes travelTimes = cache.get(params);
@@ -109,10 +104,6 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
          @Override
          public boolean isCacheable(LeafReaderContext ctx) {
             return false;
-         }
-
-         @Override
-         public void extractTerms(Set<Term> terms) {
          }
 
          @Override
@@ -145,10 +136,10 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
                   params.getTransportMode() + " score, computed as, when present, boost * limit / (limit + travelTime), otherwise 0.0, from:",
                   Explanation.match(boost, "weight"),
                   Explanation.match(limit, "maximum travel time"),
-                  Explanation.match(queryOrigin.getLat().floatValue(), "query lat"),
-                  Explanation.match(queryOrigin.getLng().floatValue(), "query lon"),
-                  Explanation.match((float) documentLat, "document lat"),
-                  Explanation.match((float) documentLon, "document lon"),
+                  Explanation.match(queryOrigin.getLat(), "query lat"),
+                  Explanation.match(queryOrigin.getLng(), "query lon"),
+                  Explanation.match(documentLat, "document lat"),
+                  Explanation.match(documentLon, "document lon"),
                   Explanation.match(travelTime, "travel time")
             );
          }
@@ -231,7 +222,10 @@ public class TraveltimeSearchQuery<Params extends QueryParams> extends ExtendedQ
                         params.getTravelTime(),
                         travelTimes,
                         weight,
+                        context.reader().maxDoc(),
+                        leadCost,
                         boost,
+                        pointValues,
                         docValues
                   );
                }

@@ -1,6 +1,6 @@
 package com.traveltime.plugin.solr.fetcher;
 
-import com.traveltime.plugin.solr.query.TraveltimeQueryParameters;
+import com.traveltime.plugin.solr.query.TravelTimeQueryParameters;
 import com.traveltime.plugin.solr.util.Util;
 import com.traveltime.sdk.TravelTimeSDK;
 import com.traveltime.sdk.auth.TravelTimeCredentials;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ProtoFetcher implements Fetcher<TraveltimeQueryParameters> {
+public class ProtoFetcher implements Fetcher<TravelTimeQueryParameters> {
    private final TravelTimeSDK api;
 
    private final Logger log = LoggerFactory.getLogger(ProtoFetcher.class);
@@ -50,7 +50,7 @@ public class ProtoFetcher implements Fetcher<TraveltimeQueryParameters> {
    }
 
    @Override
-   public List<Integer> getTimes(TraveltimeQueryParameters params, ArrayList<Coordinates> destinations) {
+   public List<Integer> getTimes(TravelTimeQueryParameters params, ArrayList<Coordinates> destinations) {
       val fastProto = TimeFilterFastProtoRequest
             .builder()
             .oneToMany(

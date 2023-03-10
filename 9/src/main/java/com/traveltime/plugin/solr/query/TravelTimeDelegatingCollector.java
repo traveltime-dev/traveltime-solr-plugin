@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TraveltimeDelegatingCollector<Params extends QueryParams> extends DelegatingCollector {
+public class TravelTimeDelegatingCollector<Params extends QueryParams> extends DelegatingCollector {
    private final LeafReaderContext[] contexts;
    private final int[] contextBaseStart;
    private final int[] contextBaseEnd;
@@ -43,7 +43,7 @@ public class TraveltimeDelegatingCollector<Params extends QueryParams> extends D
    private SortedNumericDocValues coords;
 
 
-   public TraveltimeDelegatingCollector(int maxDoc, int segments, Params params, float scoreWeight, Fetcher<Params> fetcher, RequestCache<Params> cache, boolean isFilteringDisabled) {
+   public TravelTimeDelegatingCollector(int maxDoc, int segments, Params params, float scoreWeight, Fetcher<Params> fetcher, RequestCache<Params> cache, boolean isFilteringDisabled) {
       this.maxDoc = maxDoc;
       this.contexts = new LeafReaderContext[segments];
       this.contextBaseStart = new int[segments];
