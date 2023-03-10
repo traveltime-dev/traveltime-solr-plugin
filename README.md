@@ -16,6 +16,9 @@ These query parsers has two mandatory string configuration options:
 - `app_id`: this is you API app id.
 - `api_key`: this is the api key that corresponds to the app id.
 
+Both query parsers also have an optional boolean `filtering_disabled` parameter that defaults to `false`.
+If set to `true` the query will not filter out any documents but will enable scoring and using the travel time field. 
+
 The `TimeFilterQParserPlugin` has an optional integer field `location_limit` which represents the maximum amount of locations
 that can be sent in a single request. Defaults to 2000, only increase this parameter if you API plan supports larger requests.
 ```xml
