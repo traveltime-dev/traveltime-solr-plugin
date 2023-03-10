@@ -6,10 +6,18 @@ This is a standard Solr plugin.
 The plugin jar must be copied into the [solr lib directory](https://solr.apache.org/guide/8_4/libs.html#lib-directories)
 
 To use the plugin you **must** add a `queryParser` with the class `com.traveltime.plugin.solr.TravelTimeQParserPlugin` or
-`com.traveltime.plugin.solr.TimeFilterQParserPlugin` (currently only available for solar version 8).
-This query parser has two mandatory string configuration options:
+`com.traveltime.plugin.solr.TimeFilterQParserPlugin`.
+The `TravelTimeQParserPlugin` uses the [Travel Time Matrix Fast (Proto)](https://docs.traveltime.com/api/reference/travel-time-distance-matrix-proto) endpoint.
+This is the recommended way to use our plugin due to its very low latency and high location volume per request.
+The `TimeFilterQParserPlugin` uses the [Travel Time Matrix (Time Filter)](https://docs.traveltime.com/api/reference/travel-time-distance-matrix) endpoint.
+This is more configurable and supports more countries.
+
+These query parsers has two mandatory string configuration options:
 - `app_id`: this is you API app id.
 - `api_key`: this is the api key that corresponds to the app id.
+
+Both query parsers also have an optional boolean `filtering_disabled` parameter that defaults to `false`.
+If set to `true` the query will not filter out any documents but will enable scoring and using the travel time field. 
 
 The `TimeFilterQParserPlugin` has an optional integer field `location_limit` which represents the maximum amount of locations
 that can be sent in a single request. Defaults to 2000, only increase this parameter if you API plan supports larger requests.
@@ -20,24 +28,16 @@ that can be sent in a single request. Defaults to 2000, only increase this param
 </queryParser>
 ```
 
-To display the travel times returned by the TravelTime API you must configure two more components: a `valueSourceParser`:
+To display the travel times returned by the TravelTime API you must configure two more components: a `valueSourceParser`, one of:
 ```xml
 <valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.TravelTimeValueSourceParser" />
-```
-or, if using `TimeFilterQParserPlugin`
-```xml
 <valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.timefilter.TimeFilterValueSourceParser" />
 ```
-and a `cache`:
+and a `cache`, one of:
 ```xml
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.ExactRequestCache"/>
-or
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.ExactTimeFilterRequestCache"/>
-```
-or
-```xml
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyRequestCache" secondary_size="50000"/>
-or
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyTimeFilterRequestCache" secondary_size="50000"/>
 ```
 
@@ -88,12 +88,44 @@ curl
 The configuration options may be passed as local query parameters, or as raw query parameters prefixed with `"traveltime_"`.
 If a parameter is specified in both ways, the local parameter takes precedence.
 
+## Multiple traveltime queries in the same request
+
+You can issue multiple traveltime queries in the same request (for example to retrieve both driving and public transport travel times).
+To achieve this a configuration option of `prefix` is available. This allows you to specify a parameter key prefix different than `traveltime_`.
+For example, for plugins configured with the prefix `driving_` and `walking_` you can specify the following query parameters:
+```
+driving_origin="51.536067,-0.153596"
+driving_field=coords
+driving_limit=900
+driving_mode=driving
+driving_country=uk
+
+walking_origin="51.536067,-0.153596"
+walking_field=coords
+walking_limit=1200
+walking_mode=walking
+walking_country=uk
+```
+
+
 ## Displaying travel times
 
 To display the travel times you must configure the `valueSourceParser` and `cache`.
 When configured, the time can be accessed using the `fl` parameter: `?fl=time:traveltime()`.
 The `valueSourceParser` accepts the same parameters as a query, but only in the raw query parameter form.
 If no travel time is found in the cache it will be returned as `-1`.
+
+## Scoring
+
+There are two ways a traveltime query can influence the score of a document.
+1. Filter query score:
+if the query is used as a filter query you can specify an additional `weight` parameter that is a floating point number between 1 and 0.
+The new document score will be computed as `(1 - weight) * query score + weight * traveltime score`.
+`traveltime score` is computed as `(limit - time + 1) / (limit + 1)`, so the output is between `0` and `1`, where unreachable points get a score of `0` and points with a travel time of `0` get a score of 1.
+2. Query score:
+To use traveltime in a regular query (`q={!traveltime}`) you must also use it in a filter query along with a cache.
+After that you can use it in scoring as any other query. The score is computed as `limit / (limit + time)` if the point is reachable, `0` otherwise.
+This produces a score in the range of `[0.5, 1]` for reachable points, with short traveltimes getting a relatively higher score.
 
 ## Request caches
 
