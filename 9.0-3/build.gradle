@@ -1,4 +1,4 @@
-buildPlugin(this, "9.1.0")
+buildPlugin(this, "9.3.0")
 configure(this) {
     dependencies {
         compileOnly 'org.locationtech.spatial4j:spatial4j:0.8'
