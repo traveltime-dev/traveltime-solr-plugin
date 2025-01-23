@@ -21,12 +21,6 @@ If set to `true` the query will not filter out any documents but will enable sco
 
 The `TimeFilterQParserPlugin` has an optional integer field `location_limit` which represents the maximum amount of locations
 that can be sent in a single request. Defaults to 2000, only increase this parameter if you API plan supports larger requests.
-```xml
-<queryParser name="traveltime" class="com.traveltime.plugin.solr.TravelTimeQParserPlugin">
-  <str name="app_id">your_app_id_here</str>
-  <str name="api_key">your_api_key_here</str>
-</queryParser>
-```
 
 To display the travel times returned by the TravelTime API you must configure two more components: a `valueSourceParser`, one of:
 ```xml
@@ -39,6 +33,34 @@ and a `cache`, one of:
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.ExactTimeFilterRequestCache"/>
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyRequestCache" secondary_size="50000"/>
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyTimeFilterRequestCache" secondary_size="50000"/>
+```
+
+### Example time-filter/fast configuration
+```xml
+<config>
+  <query>
+    <cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyRequestCache" secondary_size="50000"/>
+  </query>
+  <queryParser name="traveltime" class="com.traveltime.plugin.solr.TravelTimeQParserPlugin">
+    <str name="app_id">your_app_id_here</str>
+    <str name="api_key">your_api_key_here</str>
+  </queryParser>
+  <valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.TravelTimeValueSourceParser" />
+</config>
+```
+
+### Example time-filter configuration
+```xml
+<config>
+  <query>
+    <cache name="traveltime" class="com.traveltime.plugin.solr.cache.ExactTimeFilterRequestCache"/>
+  </query>
+  <queryParser name="traveltime" class="com.traveltime.plugin.solr.TravelTimeQParserPlugin">
+    <str name="app_id">your_app_id_here</str>
+    <str name="api_key">your_api_key_here</str>
+  </queryParser>
+  <valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.timefilter.TimeFilterValueSourceParser" />
+</config>
 ```
 
 ## Querying data using proto time-filter/fast requests
