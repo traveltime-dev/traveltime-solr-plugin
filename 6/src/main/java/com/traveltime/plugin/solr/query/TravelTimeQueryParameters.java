@@ -3,6 +3,7 @@ package com.traveltime.plugin.solr.query;
 import com.traveltime.plugin.solr.util.Util;
 import com.traveltime.sdk.dto.common.Coordinates;
 import com.traveltime.sdk.dto.requests.proto.Country;
+import com.traveltime.sdk.dto.requests.proto.RequestType;
 import com.traveltime.sdk.dto.requests.proto.Transportation;
 import lombok.Data;
 import lombok.With;
@@ -11,8 +12,7 @@ import org.apache.solr.schema.IndexSchema;
 import org.apache.solr.schema.LatLonPointSpatialField;
 import org.apache.solr.search.SyntaxError;
 
-import java.util.Optional;
-import java.util.function.Function;
+import static com.traveltime.plugin.solr.util.Util.findByNameOrError;
 
 @Data
 public class TravelTimeQueryParameters implements QueryParams {
@@ -23,6 +23,8 @@ public class TravelTimeQueryParameters implements QueryParams {
    private final Transportation mode;
    @With
    private final Country country;
+   @With
+   private final RequestType requestType;
 
    @Override
    public int getTravelTime() {
@@ -34,15 +36,7 @@ public class TravelTimeQueryParameters implements QueryParams {
    public static final String MODE = "mode";
    public static final String LIMIT = "limit";
    public static final String COUNTRY = "country";
-
-   private static <T> T findByNameOrError(String what, String name, Function<String, Optional<T>> finder) {
-      val result = finder.apply(name);
-      if (!result.isPresent()) {
-         throw new IllegalArgumentException(String.format("Couldn't find a %s with the name %s", what, name));
-      } else {
-         return result.get();
-      }
-   }
+   public static final String REQUEST_TYPE = "requestType";
 
    public static TravelTimeQueryParameters parse(
          IndexSchema schema,
@@ -67,6 +61,11 @@ public class TravelTimeQueryParameters implements QueryParams {
             params.getParam(TravelTimeQueryParameters.COUNTRY),
             Util::findCountryByName
       );
+      val requestType = findByNameOrError(
+         "request type",
+            params.getOptionalParam(TravelTimeQueryParameters.REQUEST_TYPE).orElse(RequestType.ONE_TO_MANY.name()),
+            Util::findRequestTypeByName
+      );
 
       int limit;
       try {
@@ -78,7 +77,7 @@ public class TravelTimeQueryParameters implements QueryParams {
          throw new SyntaxError("traveltime limit must be > 0");
       }
 
-      return new TravelTimeQueryParameters(field, origin, limit, mode, country);
+      return new TravelTimeQueryParameters(field, origin, limit, mode, country, requestType);
    }
 
    @Override
