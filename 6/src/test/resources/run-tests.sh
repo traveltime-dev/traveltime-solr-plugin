@@ -2,7 +2,7 @@
 
 set -ex
 
-trap "docker stop $IMAGE_NAME; exit 1" EXIT
+trap "docker logs $IMAGE_NAME; docker stop $IMAGE_NAME; exit 1" EXIT
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 

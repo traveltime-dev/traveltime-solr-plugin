@@ -6,7 +6,6 @@ import com.traveltime.sdk.TravelTimeSDK;
 import com.traveltime.sdk.auth.TravelTimeCredentials;
 import com.traveltime.sdk.dto.common.Coordinates;
 import com.traveltime.sdk.dto.requests.TimeFilterFastProtoRequest;
-import com.traveltime.sdk.dto.requests.proto.OneToMany;
 import com.traveltime.sdk.dto.responses.TimeFilterFastProtoResponse;
 import com.traveltime.sdk.dto.responses.errors.IOError;
 import com.traveltime.sdk.dto.responses.errors.ResponseError;
@@ -53,16 +52,12 @@ public class ProtoFetcher implements Fetcher<TravelTimeQueryParameters> {
    public List<Integer> getTimes(TravelTimeQueryParameters params, ArrayList<Coordinates> destinations) {
       val fastProto = TimeFilterFastProtoRequest
             .builder()
-            .oneToMany(
-                  OneToMany
-                        .builder()
-                        .country(params.getCountry())
-                        .transportation(params.getMode())
-                        .originCoordinate(params.getOrigin())
-                        .destinationCoordinates(destinations)
-                        .travelTime(params.getLimit())
-                        .build()
-            )
+            .requestType(params.getRequestType())
+            .country(params.getCountry())
+            .transportation(params.getMode())
+            .originCoordinate(params.getOrigin())
+            .destinationCoordinates(destinations)
+            .travelTime(params.getLimit())
             .build();
 
 
