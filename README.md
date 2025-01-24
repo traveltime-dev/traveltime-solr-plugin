@@ -72,7 +72,8 @@ The query accepts the following (mandatory) configuration options:
 - `field`: the document field that will be used as the destination in the TravelTime query.
 - `limit`: the travel time limit in seconds. Must be non-negative.
 - `mode`: Transportation mode used in the search. One of: `pt`, `walking+ferry`, `cycling+ferry`, `driving+ferry`.
-- `country`: Country that the `origin` is in. Currently may only be one of: `uk`, `nl`, `at`, `be`, `de`, `fr`, `ie`, `lt`.
+- `country`: Country code (e.g. `fr`, `uk`) of the country that the origin is in. May only be set to a country that is listed in the table for "Protocol Buffers API" at https://docs.traveltime.com/api/overview/supported-countries.
+- (optional) `requestType`: type of request made to the api. Must be one of `ONE_TO_MANY`, `MANY_TO_ONE`. Defaults to `ONE_TO_MANY`.
 
 The configuration options may be passed as local query parameters: `?fq={!traveltime origin=51.53,-0.15 field=coords limit=7200 mode=pt country=uk}`, or as raw query parameters prefixed with `"traveltime_"`: `?fq={!traveltime}&traveltime_origin=51.53,-0.15&traveltime_field=coords&traveltime_limit=7200&traveltime_mode=pt&traveltime_country=uk}`.
 If a parameter is specified in both ways, the local parameter takes precedence.
