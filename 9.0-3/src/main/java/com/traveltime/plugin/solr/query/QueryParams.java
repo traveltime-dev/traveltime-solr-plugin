@@ -3,11 +3,11 @@ package com.traveltime.plugin.solr.query;
 import com.traveltime.sdk.dto.common.Coordinates;
 
 public interface QueryParams {
-   String getField();
+  String getField();
 
-   int getTravelTime();
+  int getTravelTime();
 
-   Coordinates getOrigin();
+  Coordinates getOrigin();
 
-   String getTransportMode();
+  String getTransportMode();
 }

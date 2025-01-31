@@ -1,5 +1,7 @@
 package com.traveltime.plugin.solr.query.timefilter;
 
+import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
+
 import com.traveltime.plugin.solr.cache.RequestCache;
 import com.traveltime.plugin.solr.query.ParamSource;
 import com.traveltime.plugin.solr.query.TravelTimeValueSource;
@@ -11,39 +13,33 @@ import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
 import org.apache.solr.search.ValueSourceParser;
 
-import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
-
 public class TimeFilterValueSourceParser extends ValueSourceParser {
-   private String cacheName = RequestCache.NAME;
+  private String cacheName = RequestCache.NAME;
 
-   private String paramPrefix = PARAM_PREFIX;
+  private String paramPrefix = PARAM_PREFIX;
 
-   @Override
-   public void init(NamedList args) {
-      super.init(args);
-      Object cache = args.get("cache");
-      if (cache != null) cacheName = cache.toString();
+  @Override
+  public void init(NamedList args) {
+    super.init(args);
+    Object cache = args.get("cache");
+    if (cache != null) cacheName = cache.toString();
 
-      Object prefix = args.get("prefix");
-      if (prefix != null) paramPrefix = prefix.toString();
-   }
+    Object prefix = args.get("prefix");
+    if (prefix != null) paramPrefix = prefix.toString();
+  }
 
-   @Override
-   public ValueSource parse(FunctionQParser fp) throws SyntaxError {
-      SolrQueryRequest req = fp.getReq();
-      RequestCache<TimeFilterQueryParameters> cache = (RequestCache<TimeFilterQueryParameters>) req.getSearcher()
-                                                                                                   .getCache(cacheName);
-      if (cache == null) {
-         throw new SolrException(
-               SolrException.ErrorCode.BAD_REQUEST,
-               "No request cache configured."
-         );
-      }
+  @Override
+  public ValueSource parse(FunctionQParser fp) throws SyntaxError {
+    SolrQueryRequest req = fp.getReq();
+    RequestCache<TimeFilterQueryParameters> cache =
+        (RequestCache<TimeFilterQueryParameters>) req.getSearcher().getCache(cacheName);
+    if (cache == null) {
+      throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "No request cache configured.");
+    }
 
-      TimeFilterQueryParameters queryParams = TimeFilterQueryParameters.parse(
-            req.getSchema(),
-            new ParamSource(paramPrefix, fp.getParams())
-      );
-      return new TravelTimeValueSource<>(queryParams, cache.getOrFresh(queryParams));
-   }
+    TimeFilterQueryParameters queryParams =
+        TimeFilterQueryParameters.parse(
+            req.getSchema(), new ParamSource(paramPrefix, fp.getParams()));
+    return new TravelTimeValueSource<>(queryParams, cache.getOrFresh(queryParams));
+  }
 }
