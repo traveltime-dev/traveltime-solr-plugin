@@ -1,6 +1,7 @@
 package com.traveltime.plugin.solr.query;
 
 import com.traveltime.plugin.solr.fetcher.Fetcher;
+import com.traveltime.plugin.solr.util.Util;
 import lombok.val;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.request.SolrQueryRequest;
@@ -33,7 +34,8 @@ public class TravelTimeQueryParser extends QParser {
 
   @Override
   public TravelTimeSearchQuery<TravelTimeQueryParameters> parse() throws SyntaxError {
-    ParamSource paramSource = new ParamSource(paramPrefix, localParams, params);
+    val paramSource =
+        new ParamSource<>(SolrParamsAdapterImpl.INSTANCE, paramPrefix, localParams, params);
     float weight;
     try {
       weight = Float.parseFloat(paramSource.getParam(WEIGHT));
@@ -46,7 +48,11 @@ public class TravelTimeQueryParser extends QParser {
       throw new SyntaxError("TravelTime weight must be between 0 and 1");
     }
 
-    val params = TravelTimeQueryParameters.parse(req.getSchema(), paramSource);
+    val parameterParser =
+        new TravelTimeQueryParametersParser<>(
+            SolrParamsAdapterImpl.INSTANCE, Util.fieldValidator(req.getSchema()), Util::toGeoPoint);
+
+    val params = parameterParser.parse(paramSource);
     return new TravelTimeSearchQuery<>(params, weight, fetcher, cacheName, isFilteringDisabled);
   }
 }

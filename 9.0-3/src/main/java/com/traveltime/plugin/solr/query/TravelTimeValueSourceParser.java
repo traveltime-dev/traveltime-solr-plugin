@@ -3,6 +3,7 @@ package com.traveltime.plugin.solr.query;
 import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
 
 import com.traveltime.plugin.solr.cache.RequestCache;
+import com.traveltime.plugin.solr.util.Util;
 import lombok.val;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.solr.common.SolrException;
@@ -36,9 +37,12 @@ public class TravelTimeValueSourceParser extends ValueSourceParser {
       throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "No request cache configured.");
     }
 
+    val parametersParser =
+        new TravelTimeQueryParametersParser<>(
+            SolrParamsAdapterImpl.INSTANCE, Util.fieldValidator(req.getSchema()), Util::toGeoPoint);
     val queryParameters =
-        TravelTimeQueryParameters.parse(
-            req.getSchema(), new ParamSource(paramPrefix, fp.getParams()));
+        parametersParser.parse(
+            new ParamSource<>(SolrParamsAdapterImpl.INSTANCE, paramPrefix, fp.getParams()));
     return new TravelTimeValueSource<>(queryParameters, cache.getOrFresh(queryParameters));
   }
 }
