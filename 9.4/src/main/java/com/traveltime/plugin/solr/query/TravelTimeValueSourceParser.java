@@ -7,6 +7,7 @@ import com.traveltime.plugin.solr.util.Util;
 import lombok.val;
 import org.apache.lucene.queries.function.ValueSource;
 import org.apache.solr.common.SolrException;
+import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.FunctionQParser;
@@ -38,8 +39,8 @@ public class TravelTimeValueSourceParser extends ValueSourceParser {
     }
 
     val parametersParser =
-        new TravelTimeQueryParametersParser<>(
-            SolrParamsAdapterImpl.INSTANCE, Util.fieldValidator(req.getSchema()), Util::toGeoPoint);
+        new TravelTimeQueryParametersParser<SolrParams, SyntaxError>(
+            Util.fieldValidator(req.getSchema()), Util::toGeoPoint);
     val queryParameters =
         parametersParser.parse(
             new ParamSource<>(SolrParamsAdapterImpl.INSTANCE, paramPrefix, fp.getParams()));

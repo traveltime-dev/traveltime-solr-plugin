@@ -4,7 +4,7 @@ import java.util.Optional;
 import lombok.val;
 
 public class ParamSource<A, E extends Exception> {
-  private final SolrParamsAdapter<A, E> adapter;
+  public final SolrParamsAdapter<A, E> adapter;
 
   private final String paramPrefix;
 

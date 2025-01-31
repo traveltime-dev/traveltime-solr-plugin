@@ -12,11 +12,11 @@ import lombok.val;
 
 @RequiredArgsConstructor
 public class TravelTimeQueryParametersParser<A, E extends Exception> {
-  private final SolrParamsAdapter<A, E> adapter;
   private final Function<String, Optional<E>> fieldValidator;
   private final Function<String, Coordinates> coordinatesParser;
 
   public TravelTimeQueryParameters parse(ParamSource<A, E> params) throws E {
+    SolrParamsAdapter<A, E> adapter = params.adapter;
     String field = params.getParam(TravelTimeQueryParameters.FIELD);
 
     val fieldValidationException = fieldValidator.apply(field);

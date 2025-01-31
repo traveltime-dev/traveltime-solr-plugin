@@ -17,10 +17,10 @@ import lombok.val;
 
 @RequiredArgsConstructor
 public class TimeFilterQueryParametersParser<A, E extends Exception> {
-  private final SolrParamsAdapter<A, E> adapter;
   private final Function<String, Optional<E>> fieldValidator;
 
-  private <T> T getOrThrow(Either<TravelTimeError, T> either) throws E {
+  private <T> T getOrThrow(SolrParamsAdapter<A, E> adapter, Either<TravelTimeError, T> either)
+      throws E {
     if (either.isLeft()) {
       throw adapter.exception(either.getLeft().getMessage());
     } else {
@@ -29,6 +29,7 @@ public class TimeFilterQueryParametersParser<A, E extends Exception> {
   }
 
   public TimeFilterQueryParameters parse(ParamSource<A, E> paramSource) throws E {
+    val adapter = paramSource.adapter;
 
     String field = paramSource.getParam(TimeFilterQueryParameters.FIELD);
 
@@ -74,7 +75,7 @@ public class TimeFilterQueryParametersParser<A, E extends Exception> {
             .getOptionalParam(TimeFilterQueryParameters.RANGE)
             .map(r -> JsonUtils.fromJson(r, FullRange.class));
     Optional<FullRange> rangeOptional =
-        range.isPresent() ? Optional.of(getOrThrow(range.get())) : Optional.empty();
+        range.isPresent() ? Optional.of(getOrThrow(adapter, range.get())) : Optional.empty();
 
     int travelTime;
     try {
@@ -93,7 +94,7 @@ public class TimeFilterQueryParametersParser<A, E extends Exception> {
               paramSource.getParam(TimeFilterQueryParameters.ARRIVAL_LOCATION), Coordinates.class);
       val time = Instant.parse(paramSource.getParam(TimeFilterQueryParameters.ARRIVAL_TIME));
 
-      val location = new Location("location", getOrThrow(locationCoords));
+      val location = new Location("location", getOrThrow(adapter, locationCoords));
 
       queryParams =
           new TimeFilterQueryParameters(
@@ -101,7 +102,7 @@ public class TimeFilterQueryParametersParser<A, E extends Exception> {
               location,
               time,
               travelTime,
-              getOrThrow(transportation),
+              getOrThrow(adapter, transportation),
               rangeOptional,
               TimeFilterQueryParameters.SearchType.ARRIVAL);
     } else {
@@ -111,7 +112,7 @@ public class TimeFilterQueryParametersParser<A, E extends Exception> {
               Coordinates.class);
       val time = Instant.parse(paramSource.getParam(TimeFilterQueryParameters.DEPARTURE_TIME));
 
-      val location = new Location("location", getOrThrow(locationCoords));
+      val location = new Location("location", getOrThrow(adapter, locationCoords));
 
       queryParams =
           new TimeFilterQueryParameters(
@@ -119,7 +120,7 @@ public class TimeFilterQueryParametersParser<A, E extends Exception> {
               location,
               time,
               travelTime,
-              getOrThrow(transportation),
+              getOrThrow(adapter, transportation),
               rangeOptional,
               TimeFilterQueryParameters.SearchType.DEPARTURE);
     }
