@@ -2,10 +2,11 @@ package com.traveltime.plugin.solr.cache;
 
 import com.traveltime.plugin.solr.query.timefilter.TimeFilterQueryParameters;
 import java.util.Map;
+import lombok.Getter;
 import org.apache.solr.search.CacheRegenerator;
 
+@Getter
 public class FuzzyTimeFilterRequestCache extends RequestCache<TimeFilterQueryParameters> {
-  private final Object[] lock = new Object[0];
   private Map<String, String> args;
 
   @Override
@@ -14,19 +15,10 @@ public class FuzzyTimeFilterRequestCache extends RequestCache<TimeFilterQueryPar
     return super.init(args, persistence, regenerator);
   }
 
-  @Override
-  public TravelTimes getOrFresh(TimeFilterQueryParameters key) {
-    key = key.withField(null).withTravelTime(0);
-    TravelTimes result = get(key);
-    if (result == null) {
-      synchronized (lock) {
-        result = get(key);
-        if (result == null) {
-          result = new LRUTimes(args);
-          put(key, result);
-        }
-      }
-    }
-    return result;
-  }
+  private final UnadaptedRequestCache<TimeFilterQueryParameters> unadapted =
+      new UnadaptedRequestCache<>(
+          this::get,
+          this::put,
+          TimeFilterQueryParameters::fuzzy,
+          () -> new LRUTimes(args, AdaptedCacheImpl::new));
 }

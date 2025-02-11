@@ -15,7 +15,9 @@ buildscript {
 
 apply plugin: 'java-library'
 
-configure(subprojects) {
+def common = project(':common')
+
+configure(subprojects - common) {
     group = 'com.traveltime'
     version = project.findProperty('tag') ?: 'v0.1-SNAPSHOT'
 
@@ -34,7 +36,7 @@ configure(subprojects) {
     apply plugin: 'com.github.johnrengelman.shadow'
     apply plugin: 'java'
     apply plugin: "com.diffplug.spotless"
-    
+
     spotless {
         java {
             googleJavaFormat('1.23.0').reflowLongStrings()
@@ -60,6 +62,7 @@ configure(subprojects) {
     }
 
     dependencies {
+        implementation common
         implementation 'com.traveltime:traveltime-sdk-java:2.0.0'
         implementation 'io.vavr:vavr:0.10.4'
         implementation group: 'it.unimi.dsi', name: 'fastutil', version: '8.5.6'

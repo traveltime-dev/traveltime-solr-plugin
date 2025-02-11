@@ -1,6 +1,7 @@
 package com.traveltime.plugin.solr.query;
 
 import com.traveltime.plugin.solr.fetcher.Fetcher;
+import com.traveltime.plugin.solr.util.Util;
 import lombok.val;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.request.SolrQueryRequest;
@@ -8,8 +9,6 @@ import org.apache.solr.search.QParser;
 import org.apache.solr.search.SyntaxError;
 
 public class TravelTimeQueryParser extends QParser {
-  private static final String WEIGHT = "weight";
-
   private final Fetcher<TravelTimeQueryParameters> fetcher;
   private final String cacheName;
   private final boolean isFilteringDisabled;
@@ -33,20 +32,18 @@ public class TravelTimeQueryParser extends QParser {
 
   @Override
   public TravelTimeSearchQuery<TravelTimeQueryParameters> parse() throws SyntaxError {
-    ParamSource paramSource = new ParamSource(paramPrefix, localParams, params);
-    float weight;
-    try {
-      weight = Float.parseFloat(paramSource.getParam(WEIGHT));
-    } catch (SyntaxError ignored) {
-      weight = 0f;
-    } catch (NumberFormatException e) {
-      throw new SyntaxError("Couldn't parse traveltime weight as a float");
-    }
-    if (weight < 0 || weight > 1) {
-      throw new SyntaxError("TravelTime weight must be between 0 and 1");
-    }
+    val paramSource =
+        new ParamSource<>(SolrParamsAdapterImpl.INSTANCE, paramPrefix, localParams, params);
 
-    val params = TravelTimeQueryParameters.parse(req.getSchema(), paramSource);
+    val weightParser = new WeightParser<SyntaxError>();
+
+    float weight = weightParser.parseWeight(paramSource);
+
+    val parameterParser =
+        new TravelTimeQueryParametersParser<SolrParams, SyntaxError>(
+            Util.fieldValidator(req.getSchema()), Util::toGeoPoint);
+
+    val params = parameterParser.parse(paramSource);
     return new TravelTimeSearchQuery<>(params, weight, fetcher, cacheName, isFilteringDisabled);
   }
 }

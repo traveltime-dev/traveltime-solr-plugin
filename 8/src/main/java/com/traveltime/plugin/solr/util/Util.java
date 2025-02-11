@@ -1,20 +1,17 @@
 package com.traveltime.plugin.solr.util;
 
 import com.traveltime.sdk.dto.common.Coordinates;
-import com.traveltime.sdk.dto.requests.proto.Country;
-import com.traveltime.sdk.dto.requests.proto.RequestType;
-import com.traveltime.sdk.dto.requests.proto.Transportation;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import lombok.val;
 import org.apache.lucene.geo.GeoEncodingUtils;
 import org.apache.lucene.geo.GeoUtils;
 import org.apache.solr.common.SolrException;
+import org.apache.solr.schema.IndexSchema;
+import org.apache.solr.schema.LatLonPointSpatialField;
+import org.apache.solr.search.SyntaxError;
 import org.locationtech.spatial4j.context.SpatialContext;
 import org.locationtech.spatial4j.io.GeohashUtils;
-import org.slf4j.Logger;
 
 public final class Util {
   private Util() {
@@ -68,27 +65,14 @@ public final class Util {
     }
   }
 
-  public static Optional<Transportation> findModeByName(String name) {
-    return Arrays.stream(Transportation.values())
-        .filter(it -> it.getValue().equals(name))
-        .findFirst();
-  }
-
-  public static Optional<Country> findCountryByName(String name) {
-    return Arrays.stream(Country.values()).filter(it -> it.getValue().equals(name)).findFirst();
-  }
-
-  public static Optional<RequestType> findRequestTypeByName(String name) {
-    return Arrays.stream(RequestType.values()).filter(it -> it.toString().equals(name)).findFirst();
-  }
-
-  public static <A> A time(Logger logger, Supplier<A> expr) {
-    val startTime = System.currentTimeMillis();
-    val res = expr.get();
-    val endTime = System.currentTimeMillis();
-    val lastStack = Thread.currentThread().getStackTrace()[2].toString();
-    val message = String.format("In %s took %d ms", lastStack, endTime - startTime);
-    logger.info(message);
-    return res;
+  public static Function<String, Optional<SyntaxError>> fieldValidator(IndexSchema schema) {
+    return field -> {
+      if (!(schema.getField(field).getType() instanceof LatLonPointSpatialField)) {
+        return Optional.of(
+            new SyntaxError("field[" + field + "] is not a LatLonPointSpatialField"));
+      } else {
+        return Optional.empty();
+      }
+    };
   }
 }

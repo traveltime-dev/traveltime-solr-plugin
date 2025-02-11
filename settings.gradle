@@ -1,4 +1,5 @@
 rootProject.name = 'traveltime-solr-plugin'
+include 'common'
 include '6'
 include '7'
 include '8'
