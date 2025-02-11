@@ -1,5 +1,7 @@
 package com.traveltime.plugin.solr.query.timefilter;
 
+import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
+
 import com.traveltime.plugin.solr.cache.RequestCache;
 import com.traveltime.plugin.solr.query.ParamSource;
 import com.traveltime.plugin.solr.query.SolrParamsAdapterImpl;
@@ -14,8 +16,6 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
 import org.apache.solr.search.ValueSourceParser;
-
-import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
 
 public class TimeFilterValueSourceParser extends ValueSourceParser {
   private String cacheName = RequestCache.NAME;

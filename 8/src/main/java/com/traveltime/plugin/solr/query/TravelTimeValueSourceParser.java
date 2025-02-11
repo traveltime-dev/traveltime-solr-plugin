@@ -1,5 +1,7 @@
 package com.traveltime.plugin.solr.query;
 
+import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
+
 import com.traveltime.plugin.solr.cache.RequestCache;
 import com.traveltime.plugin.solr.util.Util;
 import lombok.val;
@@ -11,8 +13,6 @@ import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.FunctionQParser;
 import org.apache.solr.search.SyntaxError;
 import org.apache.solr.search.ValueSourceParser;
-
-import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
 
 public class TravelTimeValueSourceParser extends ValueSourceParser {
   private String cacheName = RequestCache.NAME;
