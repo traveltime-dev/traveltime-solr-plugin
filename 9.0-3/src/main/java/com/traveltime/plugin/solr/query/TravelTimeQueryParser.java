@@ -9,8 +9,6 @@ import org.apache.solr.search.QParser;
 import org.apache.solr.search.SyntaxError;
 
 public class TravelTimeQueryParser extends QParser {
-  private static final String WEIGHT = "weight";
-
   private final Fetcher<TravelTimeQueryParameters> fetcher;
   private final String cacheName;
   private final boolean isFilteringDisabled;
