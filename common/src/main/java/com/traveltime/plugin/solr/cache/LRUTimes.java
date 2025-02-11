@@ -8,14 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import lombok.val;
-import org.apache.solr.search.CaffeineCache;
-import org.apache.solr.search.NoOpRegenerator;
 
 public class LRUTimes extends TravelTimes {
-  private final CaffeineCache<Coordinates, Integer> coordsToTimes = new CaffeineCache<>();
+  private final AdaptedCache<Coordinates, Integer> coordsToTimes;
 
-  public LRUTimes(Map<String, String> args) {
+  public LRUTimes(
+      Map<String, String> args, Supplier<AdaptedCache<Coordinates, Integer>> cacheSupplier) {
     args.putIfAbsent("name", "fuzzy_cache");
     String size = args.get("secondary_size");
     if (size == null) {
@@ -23,7 +23,8 @@ public class LRUTimes extends TravelTimes {
     }
     args.put("size", size);
 
-    coordsToTimes.init(args, null, new NoOpRegenerator());
+    coordsToTimes = cacheSupplier.get();
+    coordsToTimes.init(args);
   }
 
   @Override

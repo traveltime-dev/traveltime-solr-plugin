@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.With;
 
 @Data
-public class TravelTimeQueryParameters implements QueryParams {
+public class TravelTimeQueryParameters implements QueryParams<TravelTimeQueryParameters> {
   private final String field;
   private final Coordinates origin;
   private final int limit;
@@ -31,5 +31,9 @@ public class TravelTimeQueryParameters implements QueryParams {
   @Override
   public String getTransportMode() {
     return mode == null ? "-" : mode.getValue();
+  }
+
+  public TravelTimeQueryParameters fuzzy() {
+    return new TravelTimeQueryParameters(null, origin, 0, mode, null, requestType);
   }
 }

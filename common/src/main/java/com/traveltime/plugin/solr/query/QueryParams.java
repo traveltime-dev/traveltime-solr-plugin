@@ -2,7 +2,7 @@ package com.traveltime.plugin.solr.query;
 
 import com.traveltime.sdk.dto.common.Coordinates;
 
-public interface QueryParams {
+public interface QueryParams<A extends QueryParams<A>> {
   String getField();
 
   int getTravelTime();
@@ -10,4 +10,6 @@ public interface QueryParams {
   Coordinates getOrigin();
 
   String getTransportMode();
+
+  A fuzzy();
 }

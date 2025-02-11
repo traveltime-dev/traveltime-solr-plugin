@@ -11,7 +11,7 @@ import lombok.Data;
 import lombok.With;
 
 @Data
-public class TimeFilterQueryParameters implements QueryParams {
+public class TimeFilterQueryParameters implements QueryParams<TimeFilterQueryParameters> {
   @With private final String field;
   private final Location location;
   private final Instant time;
@@ -45,5 +45,9 @@ public class TimeFilterQueryParameters implements QueryParams {
   @Override
   public String getTransportMode() {
     return transportation == null ? "-" : transportation.toString();
+  }
+
+  public TimeFilterQueryParameters fuzzy() {
+    return withField(null).withTravelTime(0);
   }
 }
