@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.concurrent.locks.StampedLock;
 import lombok.val;
 
-public class BasicTravelTimes extends TravelTimes {
+public class BasicCachedData extends CachedData {
   private final StampedLock rwLock = new StampedLock();
   private final Object2IntOpenHashMap<Coordinates> coordsToTimes = new Object2IntOpenHashMap<>();
 
@@ -44,7 +44,7 @@ public class BasicTravelTimes extends TravelTimes {
   }
 
   @Override
-  public Object2IntOpenHashMap<Coordinates> mapToTimes(
+  public Object2IntOpenHashMap<Coordinates> mapToData(
       int ignored, ObjectCollection<Coordinates> coords) {
     long read = rwLock.readLock();
     try {

@@ -1,6 +1,6 @@
 package com.traveltime.plugin.solr.query;
 
-import com.traveltime.plugin.solr.cache.TravelTimes;
+import com.traveltime.plugin.solr.cache.CachedData;
 import com.traveltime.plugin.solr.util.Util;
 import java.io.IOException;
 import java.util.Map;
@@ -17,7 +17,7 @@ import org.apache.lucene.queries.function.docvalues.IntDocValues;
 @EqualsAndHashCode(callSuper = false)
 public class TravelTimeValueSource<Params extends QueryParams> extends ValueSource {
   private final Params params;
-  @EqualsAndHashCode.Exclude private final TravelTimes cache;
+  @EqualsAndHashCode.Exclude private final CachedData cache;
 
   @Override
   public FunctionValues getValues(Map context, LeafReaderContext readerContext) throws IOException {

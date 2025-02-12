@@ -7,5 +7,5 @@ import lombok.Getter;
 @Getter
 public class ExactRequestCache extends RequestCache<TravelTimeQueryParameters> {
   private final UnadaptedRequestCache<TravelTimeQueryParameters> unadapted =
-      new UnadaptedRequestCache<>(this::get, this::put, Function.identity(), BasicTravelTimes::new);
+      new UnadaptedRequestCache<>(this::get, this::put, Function.identity(), BasicCachedData::new);
 }

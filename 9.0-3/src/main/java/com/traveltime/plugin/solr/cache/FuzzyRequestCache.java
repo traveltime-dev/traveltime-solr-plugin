@@ -20,5 +20,5 @@ public class FuzzyRequestCache extends RequestCache<TravelTimeQueryParameters> {
           this::get,
           this::put,
           TravelTimeQueryParameters::fuzzy,
-          () -> new LRUTimes(args, AdaptedCacheImpl::new));
+          () -> new LRUData(args, AdaptedCacheImpl::new));
 }

@@ -7,21 +7,21 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class UnadaptedRequestCache<P> {
-  private final Function<P, TravelTimes> get;
-  private final BiConsumer<P, TravelTimes> put;
+  private final Function<P, CachedData> get;
+  private final BiConsumer<P, CachedData> put;
   private final Function<P, P> keyMapper;
-  private final Supplier<? extends TravelTimes> timesSupplier;
+  private final Supplier<? extends CachedData> dataSupplier;
 
   private final Object[] lock = new Object[0];
 
-  public TravelTimes getOrFresh(P key) {
+  public CachedData getOrFresh(P key) {
     key = keyMapper.apply(key);
-    TravelTimes result = get.apply(key);
+    CachedData result = get.apply(key);
     if (result == null) {
       synchronized (lock) {
         result = get.apply(key);
         if (result == null) {
-          result = timesSupplier.get();
+          result = dataSupplier.get();
           put.accept(key, result);
         }
       }

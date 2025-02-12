@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public abstract class TravelTimes {
+public abstract class CachedData {
   public abstract Set<Coordinates> nonCached(int limit, ObjectCollection<Coordinates> coords);
 
   public abstract void putAll(int limit, ArrayList<Coordinates> coords, List<Integer> times);
 
-  public abstract Object2IntOpenHashMap<Coordinates> mapToTimes(
+  public abstract Object2IntOpenHashMap<Coordinates> mapToData(
       int limit, ObjectCollection<Coordinates> coords);
 
   public abstract int get(Coordinates coord);

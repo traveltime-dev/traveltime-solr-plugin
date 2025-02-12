@@ -1,7 +1,7 @@
 package com.traveltime.plugin.solr.query;
 
+import com.traveltime.plugin.solr.cache.CachedData;
 import com.traveltime.plugin.solr.cache.RequestCache;
-import com.traveltime.plugin.solr.cache.TravelTimes;
 import com.traveltime.plugin.solr.cache.UnprotectedTimes;
 import com.traveltime.plugin.solr.fetcher.Fetcher;
 import com.traveltime.plugin.solr.util.Util;
@@ -94,7 +94,7 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams> extends D
 
   private Object2IntOpenHashMap<Coordinates> computePointToTime(
       ObjectCollection<Coordinates> coords) {
-    TravelTimes cachedResults;
+    CachedData cachedResults;
     if (cache != null) {
       cachedResults = cache.getOrFresh(params);
     } else {
@@ -114,7 +114,7 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams> extends D
 
     cachedResults.putAll(params.getTravelTime(), destinations, times);
 
-    return cachedResults.mapToTimes(params.getTravelTime(), coords);
+    return cachedResults.mapToData(params.getTravelTime(), coords);
   }
 
   @Override

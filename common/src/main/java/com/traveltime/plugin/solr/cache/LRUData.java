@@ -11,10 +11,10 @@ import java.util.Set;
 import java.util.function.Supplier;
 import lombok.val;
 
-public class LRUTimes extends TravelTimes {
+public class LRUData extends CachedData {
   private final AdaptedCache<Coordinates, Integer> coordsToTimes;
 
-  public LRUTimes(
+  public LRUData(
       Map<String, String> args, Supplier<AdaptedCache<Coordinates, Integer>> cacheSupplier) {
     args.putIfAbsent("name", "fuzzy_cache");
     String size = args.get("secondary_size");
@@ -55,7 +55,7 @@ public class LRUTimes extends TravelTimes {
   }
 
   @Override
-  public Object2IntOpenHashMap<Coordinates> mapToTimes(
+  public Object2IntOpenHashMap<Coordinates> mapToData(
       int limit, ObjectCollection<Coordinates> coords) {
     val pointToTime = new Object2IntOpenHashMap<Coordinates>(coords.size());
     coords.forEach(
