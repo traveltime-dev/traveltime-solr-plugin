@@ -52,6 +52,14 @@ public class TravelTimeQueryParametersParser<A, E extends Exception> {
       throw adapter.exception("traveltime limit must be > 0");
     }
 
-    return new TravelTimeQueryParameters(field, origin, limit, mode, country, requestType);
+    boolean distances;
+    try {
+      distances = Boolean.parseBoolean(params.getParam(TravelTimeQueryParameters.DISTANCES));
+    } catch (NumberFormatException e) {
+      throw adapter.exception("Couldn't parse distances as a boolean");
+    }
+
+    return new TravelTimeQueryParameters(
+        field, origin, limit, mode, country, requestType, distances);
   }
 }

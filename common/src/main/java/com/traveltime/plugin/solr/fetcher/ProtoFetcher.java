@@ -6,14 +6,12 @@ import com.traveltime.sdk.TravelTimeSDK;
 import com.traveltime.sdk.auth.TravelTimeCredentials;
 import com.traveltime.sdk.dto.common.Coordinates;
 import com.traveltime.sdk.dto.requests.TimeFilterFastProtoRequest;
-import com.traveltime.sdk.dto.responses.TimeFilterFastProtoResponse;
 import com.traveltime.sdk.dto.responses.errors.IOError;
 import com.traveltime.sdk.dto.responses.errors.ResponseError;
 import com.traveltime.sdk.dto.responses.errors.TravelTimeError;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +45,7 @@ public class ProtoFetcher implements Fetcher<TravelTimeQueryParameters> {
   }
 
   @Override
-  public List<Integer> getTimes(
+  public Response getTimesDistances(
       TravelTimeQueryParameters params, ArrayList<Coordinates> destinations) {
     val fastProto =
         TimeFilterFastProtoRequest.builder()
@@ -57,6 +55,7 @@ public class ProtoFetcher implements Fetcher<TravelTimeQueryParameters> {
             .originCoordinate(params.getOrigin())
             .destinationCoordinates(destinations)
             .travelTime(params.getLimit())
+            .withDistance(params.isDistances())
             .build();
 
     log.info("Fetching {} destinations", destinations.size());
@@ -67,6 +66,6 @@ public class ProtoFetcher implements Fetcher<TravelTimeQueryParameters> {
           logError(err);
           throw new RuntimeException(err.getMessage());
         },
-        TimeFilterFastProtoResponse::getTravelTimes);
+        resp -> Response.of(resp.getTravelTimes(), resp.getDistances()));
   }
 }

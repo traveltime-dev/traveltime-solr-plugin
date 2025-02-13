@@ -11,5 +11,7 @@ public interface QueryParams<A extends QueryParams<A>> {
 
   String getTransportMode();
 
+  boolean isDistances();
+
   A fuzzy();
 }

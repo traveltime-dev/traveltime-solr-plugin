@@ -44,6 +44,7 @@ public class TravelTimeValueSourceParser extends ValueSourceParser {
     val queryParameters =
         parametersParser.parse(
             new ParamSource<>(SolrParamsAdapterImpl.INSTANCE, paramPrefix, fp.getParams()));
-    return new TravelTimeValueSource<>(queryParameters, cache.getOrFresh(queryParameters));
+    return new TravelTimeValueSource<>(
+        queryParameters, cache.getOrFresh(queryParameters).getTimes());
   }
 }

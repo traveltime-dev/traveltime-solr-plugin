@@ -40,7 +40,7 @@ import org.apache.solr.search.SolrIndexSearcher;
 
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TravelTimeSearchQuery<Params extends QueryParams> extends ExtendedQueryBase
+public class TravelTimeSearchQuery<Params extends QueryParams<Params>> extends ExtendedQueryBase
     implements PostFilter {
   private final Params params;
   private final float weight;
@@ -91,7 +91,7 @@ public class TravelTimeSearchQuery<Params extends QueryParams> extends ExtendedQ
   public Weight createWeight(IndexSearcher indexSearcher, boolean needsScores) {
     SolrIndexSearcher searcher = (SolrIndexSearcher) indexSearcher;
     RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
-    CachedData travelTimes = cache.get(params);
+    CachedData travelTimes = cache.get(params).getTimes();
     return new Weight(this) {
 
       private float norm = 1f;

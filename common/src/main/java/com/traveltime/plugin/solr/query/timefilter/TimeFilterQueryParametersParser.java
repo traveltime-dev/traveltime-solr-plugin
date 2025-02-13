@@ -104,7 +104,8 @@ public class TimeFilterQueryParametersParser<A, E extends Exception> {
               travelTime,
               getOrThrow(adapter, transportation),
               rangeOptional,
-              TimeFilterQueryParameters.SearchType.ARRIVAL);
+              TimeFilterQueryParameters.SearchType.ARRIVAL,
+              false);
     } else {
       val locationCoords =
           JsonUtils.fromJson(
@@ -122,7 +123,8 @@ public class TimeFilterQueryParametersParser<A, E extends Exception> {
               travelTime,
               getOrThrow(adapter, transportation),
               rangeOptional,
-              TimeFilterQueryParameters.SearchType.DEPARTURE);
+              TimeFilterQueryParameters.SearchType.DEPARTURE,
+              false);
     }
     return queryParams;
   }

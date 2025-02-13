@@ -5,12 +5,13 @@ import org.apache.solr.search.CacheRegenerator;
 import org.apache.solr.search.FastLRUCache;
 import org.apache.solr.util.SolrPluginUtils;
 
-public abstract class RequestCache<P> extends FastLRUCache<P, CachedData> {
+public abstract class RequestCache<P>
+    extends FastLRUCache<P, UnadaptedRequestCache.TimesAndDistances> {
   public static final String NAME = "traveltime";
 
   protected abstract UnadaptedRequestCache<P> getUnadapted();
 
-  public CachedData getOrFresh(P key) {
+  public UnadaptedRequestCache.TimesAndDistances getOrFresh(P key) {
     return getUnadapted().getOrFresh(key);
   }
 
