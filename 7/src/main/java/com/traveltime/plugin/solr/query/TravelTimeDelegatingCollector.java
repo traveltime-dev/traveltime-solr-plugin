@@ -4,7 +4,6 @@ import com.traveltime.plugin.solr.cache.RequestCache;
 import com.traveltime.plugin.solr.cache.UnadaptedRequestCache;
 import com.traveltime.plugin.solr.cache.UnprotectedTimes;
 import com.traveltime.plugin.solr.fetcher.Fetcher;
-import com.traveltime.plugin.solr.fetcher.Response;
 import com.traveltime.plugin.solr.util.Util;
 import com.traveltime.sdk.dto.common.Coordinates;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
@@ -12,7 +11,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import java.io.IOException;
-import java.util.ArrayList;
 import lombok.val;
 import org.apache.lucene.index.DocValues;
 import org.apache.lucene.index.LeafReaderContext;
@@ -91,7 +89,7 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
     }
   }
 
-  private UnadaptedRequestCache.TimesAndDistances computePointToTime(
+  private UnadaptedRequestCache.TimesAndDistances getWithCache(
       ObjectCollection<Coordinates> coords) {
     UnadaptedRequestCache.TimesAndDistances cachedResults;
     if (cache != null) {
@@ -101,29 +99,7 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
           new UnadaptedRequestCache.TimesAndDistances(
               new UnprotectedTimes(), new UnprotectedTimes());
     }
-
-    val nonCachedSet = cachedResults.getTimes().nonCached(params.getTravelTime(), coords);
-    if (params.isDistances()) {
-      nonCachedSet.addAll(cachedResults.getDistances().nonCached(params.getTravelTime(), coords));
-    }
-
-    ArrayList<Coordinates> destinations = new ArrayList<>(nonCachedSet);
-
-    Response reponse;
-    if (destinations.isEmpty()) {
-      reponse = Response.empty();
-    } else {
-      reponse = fetcher.getTimesDistances(params, destinations);
-    }
-
-    cachedResults.getTimes().putAll(params.getTravelTime(), destinations, reponse.getTimes());
-    if (params.isDistances()) {
-      cachedResults
-          .getDistances()
-          .putAll(params.getTravelTime(), destinations, reponse.getDistances());
-    }
-
-    return cachedResults;
+    return fetcher.getWithCached(cachedResults, params, coords);
   }
 
   @Override
@@ -131,7 +107,7 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
     if (contexts.length == 0) return;
 
     pointToTime =
-        computePointToTime(globalDoc2Coords.values())
+        getWithCache(globalDoc2Coords.values())
             .getTimes()
             .mapToData(params.getTravelTime(), globalDoc2Coords.values());
 
