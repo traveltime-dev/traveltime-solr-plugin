@@ -54,7 +54,7 @@ public class TravelTimeQueryParametersParser<A, E extends Exception> {
 
     boolean distances;
     try {
-      distances = Boolean.parseBoolean(params.getParam(TravelTimeQueryParameters.DISTANCES));
+      distances = params.getOptionalParam(TravelTimeQueryParameters.DISTANCES).map(Boolean::parseBoolean).orElse(false);
     } catch (NumberFormatException e) {
       throw adapter.exception("Couldn't parse distances as a boolean");
     }
