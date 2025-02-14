@@ -17,7 +17,7 @@ import org.apache.lucene.queries.function.docvalues.IntDocValues;
 
 @RequiredArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TravelTimeValueSource<Params extends QueryParams> extends ValueSource {
+public class TravelTimeValueSource<Params extends QueryParams<Params>> extends ValueSource {
   private final Params params;
   @EqualsAndHashCode.Exclude private final CachedData cache;
 
