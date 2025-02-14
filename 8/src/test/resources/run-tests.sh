@@ -16,6 +16,7 @@ docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:applicatio
 docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "traveltime_e", "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
 docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "traveltime_f", "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "cache": "traveltime_fuzzy"}}' http://localhost:8983/solr/london/config
 docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "traveltime_e", "class": "com.traveltime.plugin.solr.query.TravelTimeValueSourceParser", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
+docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "distance_e", "class": "com.traveltime.plugin.solr.query.DistanceValueSourceParser", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
 docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "traveltime_f", "class": "com.traveltime.plugin.solr.query.TravelTimeValueSourceParser", "cache": "traveltime_fuzzy"}}' http://localhost:8983/solr/london/config
 
 docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "traveltime_driving", "prefix": "driving_", "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
@@ -60,6 +61,14 @@ docker exec $IMAGE_NAME \
 docker exec $IMAGE_NAME \
   curl -s --fail $DATA_ARGS --data-urlencode fq="{!traveltime_e weight=1}" --data-urlencode "fl=time:traveltime_e(),id" $URL \
   | jq '.response.docs[0].id' | xargs test "n3079325660" ==
+
+docker exec $IMAGE_NAME \
+  curl -s --fail $DATA_ARGS --data-urlencode fq="{!traveltime_e weight=1}" --data-urlencode "traveltime_distances=true" --data-urlencode "fl=time:traveltime_e(),dist:distance_e(),id" $URL \
+  | jq '.response.docs[0].time' | xargs test "4" ==
+
+docker exec $IMAGE_NAME \
+  curl -s --fail $DATA_ARGS --data-urlencode fq="{!traveltime_e weight=1}" --data-urlencode "traveltime_distances=true" --data-urlencode "fl=time:traveltime_e(),dist:distance_e(),id" $URL \
+  | jq '.response.docs[0].dist' | xargs test "57" ==
 
 docker exec $IMAGE_NAME \
   curl -s --fail $DATA_ARGS --data-urlencode fq="{!traveltime_nofilter weight=1}" --data-urlencode "fl=id" $URL \
