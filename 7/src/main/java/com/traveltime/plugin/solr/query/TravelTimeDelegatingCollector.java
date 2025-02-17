@@ -1,7 +1,7 @@
 package com.traveltime.plugin.solr.query;
 
 import com.traveltime.plugin.solr.cache.RequestCache;
-import com.traveltime.plugin.solr.cache.TravelTimes;
+import com.traveltime.plugin.solr.cache.UnadaptedRequestCache;
 import com.traveltime.plugin.solr.cache.UnprotectedTimes;
 import com.traveltime.plugin.solr.fetcher.Fetcher;
 import com.traveltime.plugin.solr.util.Util;
@@ -11,8 +11,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.val;
 import org.apache.lucene.index.DocValues;
 import org.apache.lucene.index.LeafReaderContext;
@@ -23,7 +21,8 @@ import org.apache.lucene.util.BitSetIterator;
 import org.apache.lucene.util.FixedBitSet;
 import org.apache.solr.search.DelegatingCollector;
 
-public class TravelTimeDelegatingCollector<Params extends QueryParams> extends DelegatingCollector {
+public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
+    extends DelegatingCollector {
   private final LeafReaderContext[] contexts;
   private final int[] contextBaseStart;
   private final int[] contextBaseEnd;
@@ -90,36 +89,27 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams> extends D
     }
   }
 
-  private Object2IntOpenHashMap<Coordinates> computePointToTime(
+  private UnadaptedRequestCache.TimesAndDistances getWithCache(
       ObjectCollection<Coordinates> coords) {
-    TravelTimes cachedResults;
+    UnadaptedRequestCache.TimesAndDistances cachedResults;
     if (cache != null) {
       cachedResults = cache.getOrFresh(params);
     } else {
-      cachedResults = new UnprotectedTimes();
+      cachedResults =
+          new UnadaptedRequestCache.TimesAndDistances(
+              new UnprotectedTimes(), new UnprotectedTimes());
     }
-
-    val nonCachedSet = cachedResults.nonCached(params.getTravelTime(), coords);
-
-    ArrayList<Coordinates> destinations = new ArrayList<>(nonCachedSet);
-
-    List<Integer> times;
-    if (destinations.size() == 0) {
-      times = new ArrayList<>();
-    } else {
-      times = fetcher.getTimes(params, destinations);
-    }
-
-    cachedResults.putAll(params.getTravelTime(), destinations, times);
-
-    return cachedResults.mapToTimes(params.getTravelTime(), coords);
+    return fetcher.getWithCached(cachedResults, params, coords);
   }
 
   @Override
   public void finish() throws IOException {
     if (contexts.length == 0) return;
 
-    pointToTime = computePointToTime(globalDoc2Coords.values());
+    pointToTime =
+        getWithCache(globalDoc2Coords.values())
+            .getTimes()
+            .mapToData(params.getTravelTime(), globalDoc2Coords.values());
 
     val collectedDocs = new BitSetIterator(collectedGlobalDocs, 0L);
     val forwardingScorer = new ForwardingScorer(collectedDocs);

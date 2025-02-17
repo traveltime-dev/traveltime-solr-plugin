@@ -21,8 +21,8 @@
  */
 package com.traveltime.plugin.solr.query;
 
+import com.traveltime.plugin.solr.cache.CachedData;
 import com.traveltime.plugin.solr.cache.RequestCache;
-import com.traveltime.plugin.solr.cache.TravelTimes;
 import com.traveltime.plugin.solr.fetcher.Fetcher;
 import com.traveltime.sdk.dto.common.Coordinates;
 import java.io.IOException;
@@ -39,7 +39,7 @@ import org.apache.solr.search.SolrIndexSearcher;
 
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = false)
-public class TravelTimeSearchQuery<Params extends QueryParams> extends ExtendedQueryBase
+public class TravelTimeSearchQuery<Params extends QueryParams<Params>> extends ExtendedQueryBase
     implements PostFilter {
   private final Params params;
   private final float weight;
@@ -90,7 +90,7 @@ public class TravelTimeSearchQuery<Params extends QueryParams> extends ExtendedQ
   public Weight createWeight(IndexSearcher indexSearcher, ScoreMode scoreMode, float boost) {
     SolrIndexSearcher searcher = (SolrIndexSearcher) indexSearcher;
     RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
-    TravelTimes travelTimes = cache.get(params);
+    CachedData travelTimes = cache.get(params).getTimes();
     return new Weight(this) {
 
       private final int limit = params.getTravelTime();

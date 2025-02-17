@@ -48,6 +48,6 @@ public class TimeFilterValueSourceParser extends ValueSourceParser {
     TimeFilterQueryParameters queryParams =
         timeFilterQueryParametersParser.parse(
             new ParamSource<>(SolrParamsAdapterImpl.INSTANCE, paramPrefix, fp.getParams()));
-    return new TravelTimeValueSource<>(queryParams, cache.getOrFresh(queryParams));
+    return new TravelTimeValueSource<>(queryParams, cache.getOrFresh(queryParams).getTimes());
   }
 }

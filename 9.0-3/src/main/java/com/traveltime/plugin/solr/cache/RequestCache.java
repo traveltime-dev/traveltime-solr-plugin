@@ -5,12 +5,13 @@ import org.apache.solr.search.CacheRegenerator;
 import org.apache.solr.search.CaffeineCache;
 import org.apache.solr.search.NoOpRegenerator;
 
-public abstract class RequestCache<P> extends CaffeineCache<P, TravelTimes> {
+public abstract class RequestCache<P>
+    extends CaffeineCache<P, UnadaptedRequestCache.TimesAndDistances> {
   public static final String NAME = "traveltime";
 
   protected abstract UnadaptedRequestCache<P> getUnadapted();
 
-  public TravelTimes getOrFresh(P key) {
+  public UnadaptedRequestCache.TimesAndDistances getOrFresh(P key) {
     return getUnadapted().getOrFresh(key);
   }
 

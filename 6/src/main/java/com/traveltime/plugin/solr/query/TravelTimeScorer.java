@@ -20,7 +20,7 @@
  */
 package com.traveltime.plugin.solr.query;
 
-import com.traveltime.plugin.solr.cache.TravelTimes;
+import com.traveltime.plugin.solr.cache.CachedData;
 import com.traveltime.sdk.dto.common.Coordinates;
 import java.io.IOException;
 import org.apache.lucene.geo.GeoEncodingUtils;
@@ -38,11 +38,11 @@ class TravelTimeScorer extends Scorer {
   // Stored as a double so conversion from int to double does not have to be
   // done every time the score is calculated.
   private final double limitAsDouble;
-  private final TravelTimes travelTimes;
+  private final CachedData travelTimes;
 
   protected TravelTimeScorer(
       int limit,
-      TravelTimes travelTimes,
+      CachedData travelTimes,
       Weight weight,
       float queryWeight,
       NumericDocValues docValues,

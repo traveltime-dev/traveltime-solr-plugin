@@ -19,6 +19,7 @@ public class TimeFilterQueryParameters implements QueryParams<TimeFilterQueryPar
   private final Transportation transportation;
   private final Optional<FullRange> range;
   private final SearchType searchType;
+  @With private final boolean distances;
 
   public enum SearchType {
     ARRIVAL,
@@ -48,6 +49,6 @@ public class TimeFilterQueryParameters implements QueryParams<TimeFilterQueryPar
   }
 
   public TimeFilterQueryParameters fuzzy() {
-    return withField(null).withTravelTime(0);
+    return withField(null).withTravelTime(0).withDistances(false);
   }
 }

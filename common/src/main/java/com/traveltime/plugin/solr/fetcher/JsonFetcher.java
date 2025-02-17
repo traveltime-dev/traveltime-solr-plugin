@@ -66,15 +66,19 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
     this.locationSizeLimit = locationSizeLimit;
   }
 
-  private Integer[] extractTimes(TimeFilterResponse response, Integer[] travelTimes) {
+  private Integer[] extractTimesDistances(
+      TimeFilterResponse response, Integer[] travelTimes, Integer[] distances) {
     val result = response.getResults().get(0);
 
     result
         .getLocations()
         .forEach(
-            location ->
-                travelTimes[Integer.parseInt(location.getId())] =
-                    location.getProperties().get(0).getTravelTime());
+            location -> {
+              travelTimes[Integer.parseInt(location.getId())] =
+                  location.getProperties().get(0).getTravelTime();
+              distances[Integer.parseInt(location.getId())] =
+                  location.getProperties().get(0).getDistance();
+            });
 
     result
         .getUnreachable()
@@ -83,7 +87,7 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
     return travelTimes;
   }
 
-  public List<Integer> getTimes(
+  public Response getTimesDistances(
       TimeFilterQueryParameters parameters, ArrayList<Coordinates> points) {
 
     val locations =
@@ -92,6 +96,11 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
             .collect(Collectors.toList());
 
     val groupedLocations = Iterables.partition(locations, locationSizeLimit);
+
+    List<Property> properties =
+        parameters.isDistances()
+            ? Arrays.asList(Property.TRAVEL_TIME, Property.DISTANCE)
+            : Collections.singletonList(Property.TRAVEL_TIME);
 
     val requests =
         StreamSupport.stream(groupedLocations.spliterator(), true)
@@ -113,7 +122,7 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
                                       .collect(Collectors.toList()))
                               .arrivalTime(parameters.getTime())
                               .travelTime(parameters.getTravelTime())
-                              .properties(Collections.singletonList(Property.TRAVEL_TIME))
+                              .properties(properties)
                               .transportation(parameters.getTransportation());
                       val arrivalSearch =
                           parameters
@@ -134,7 +143,7 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
                                       .collect(Collectors.toList()))
                               .departureTime(parameters.getTime())
                               .travelTime(parameters.getTravelTime())
-                              .properties(Collections.singletonList(Property.TRAVEL_TIME))
+                              .properties(properties)
                               .transportation(parameters.getTransportation());
                       val departureSearch =
                           parameters
@@ -151,7 +160,8 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
 
     log.info(String.format("Fetching %d locations", points.size()));
 
-    Integer[] resultArray = new Integer[locations.size()];
+    Integer[] timeResults = new Integer[locations.size()];
+    Integer[] distanceResults = new Integer[locations.size()];
 
     requests
         .map(request -> Util.time(log, () -> api.send(request)))
@@ -162,8 +172,11 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
                       logError(err);
                       throw new RuntimeException(err.toString());
                     },
-                    succ -> extractTimes(succ, resultArray)));
+                    succ -> extractTimesDistances(succ, timeResults, distanceResults)));
 
-    return Arrays.stream(resultArray).collect(Collectors.toList());
+    val times = Arrays.stream(timeResults).collect(Collectors.toList());
+    val distances = Arrays.stream(distanceResults).collect(Collectors.toList());
+
+    return Response.of(times, distances);
   }
 }

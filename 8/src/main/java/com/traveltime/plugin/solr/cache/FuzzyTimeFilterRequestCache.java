@@ -20,5 +20,5 @@ public class FuzzyTimeFilterRequestCache extends RequestCache<TimeFilterQueryPar
           this::get,
           this::put,
           TimeFilterQueryParameters::fuzzy,
-          () -> new LRUTimes(args, AdaptedCacheImpl::new));
+          () -> new LRUData(args, AdaptedCacheImpl::new));
 }

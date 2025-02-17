@@ -22,10 +22,15 @@ If set to `true` the query will not filter out any documents but will enable sco
 The `TimeFilterQParserPlugin` has an optional integer field `location_limit` which represents the maximum amount of locations
 that can be sent in a single request. Defaults to 2000, only increase this parameter if you API plan supports larger requests.
 
-To display the travel times returned by the TravelTime API you must configure two more components: a `valueSourceParser`, one of:
+To display the travel times and distances returned by the TravelTime API you must configure two more components: a `valueSourceParser`, for times one of:
 ```xml
 <valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.TravelTimeValueSourceParser" />
 <valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.timefilter.TimeFilterValueSourceParser" />
+```
+for distances one of:
+```xml
+<valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.DistanceValueSourceParser" />
+<valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.timefilter.DistanceValueSourceParser" />
 ```
 and a `cache`, one of:
 ```xml
@@ -34,6 +39,8 @@ and a `cache`, one of:
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyRequestCache" secondary_size="50000"/>
 <cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyTimeFilterRequestCache" secondary_size="50000"/>
 ```
+
+Note that to get be able to output distances you will need to set an appropriate parameter in the query.
 
 ### Example time-filter/fast configuration
 ```xml
@@ -46,6 +53,7 @@ and a `cache`, one of:
     <str name="api_key">your_api_key_here</str>
   </queryParser>
   <valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.TravelTimeValueSourceParser" />
+  <valueSourceParser name="distance" class="com.traveltime.plugin.solr.query.DistanceValueSourceParser" />
 </config>
 ```
 
@@ -60,6 +68,7 @@ and a `cache`, one of:
     <str name="api_key">your_api_key_here</str>
   </queryParser>
   <valueSourceParser name="traveltime" class="com.traveltime.plugin.solr.query.timefilter.TimeFilterValueSourceParser" />
+  <valueSourceParser name="distance" class="com.traveltime.plugin.solr.query.timefilter.DistanceValueSourceParser" />
 </config>
 ```
 
@@ -74,6 +83,8 @@ The query accepts the following (mandatory) configuration options:
 - `mode`: Transportation mode used in the search. One of: `pt`, `walking+ferry`, `cycling+ferry`, `driving+ferry`.
 - `country`: Country code (e.g. `fr`, `uk`) of the country that the origin is in. May only be set to a country that is listed in the table for "Protocol Buffers API" at https://docs.traveltime.com/api/overview/supported-countries.
 - (optional) `requestType`: type of request made to the api. Must be one of `ONE_TO_MANY`, `MANY_TO_ONE`. Defaults to `ONE_TO_MANY`.
+- (optional) `distances`: a boolean value that determines whether the distances should be returned in the response. Must be specified as a raw query parameter. Defaults to `false`.
+
 
 The configuration options may be passed as local query parameters: `?fq={!traveltime origin=51.53,-0.15 field=coords limit=7200 mode=pt country=uk}`, or as raw query parameters prefixed with `"traveltime_"`: `?fq={!traveltime}&traveltime_origin=51.53,-0.15&traveltime_field=coords&traveltime_limit=7200&traveltime_mode=pt&traveltime_country=uk}`.
 If a parameter is specified in both ways, the local parameter takes precedence.
@@ -94,6 +105,7 @@ The query accepts the following configuration options:
   https://docs.traveltime.com/api/reference/travel-time-distance-matrix#departure_searches-transportation
 - (optional) `range`: : a string containing a JSON object describing the range search as defined by the TravelTime API:
   https://docs.traveltime.com/api/reference/travel-time-distance-matrix#departure_searches-range
+- (optional) `distances`: a boolean value that determines whether the distances should be returned in the response. Must be specified as a raw query parameter. Defaults to `false`.
 
 An example query using `curl`:
 ```shell
@@ -103,7 +115,7 @@ curl
   --data-urlencode 'traveltime_travel_time=3000'
   --data-urlencode 'traveltime_arrival_location={"lat":51.536067,"lng":-0.153596}'
   --data-urlencode 'traveltime_arrival_time=2022-12-19T15:00:00Z'
-  --data-urlencode 'transportation={"type":"public_transport"}'
+  --data-urlencode 'traveltime_transportation={"type":"public_transport"}'
   --data-urlencode fq="{!traveltime weight=1}"
   $URL
 ```
@@ -131,12 +143,14 @@ walking_country=uk
 ```
 
 
-## Displaying travel times
+## Displaying travel times and distances
 
-To display the travel times you must configure the `valueSourceParser` and `cache`.
-When configured, the time can be accessed using the `fl` parameter: `?fl=time:traveltime()`.
+To display the travel times or distances you must configure the `valueSourceParser` and `cache`.
+When configured, the time/distance can be accessed using the `fl` parameter: `?fl=time:traveltime()&fl=dist:distance()`.
+The `traveltime()` and `distance()` functions refer to the names given to the `valueSourceParser`s. 
 The `valueSourceParser` accepts the same parameters as a query, but only in the raw query parameter form.
-If no travel time is found in the cache it will be returned as `-1`.
+If no value is found in the cache it will be returned as `-1`.
+To display distances the `distances` parameter must be set to `true` in the query.
 
 ## Scoring
 

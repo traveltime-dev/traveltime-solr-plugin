@@ -15,6 +15,7 @@ public class TravelTimeQueryParameters implements QueryParams<TravelTimeQueryPar
   @With private final Transportation mode;
   @With private final Country country;
   @With private final RequestType requestType;
+  @With private final boolean distances;
 
   @Override
   public int getTravelTime() {
@@ -27,6 +28,7 @@ public class TravelTimeQueryParameters implements QueryParams<TravelTimeQueryPar
   public static final String LIMIT = "limit";
   public static final String COUNTRY = "country";
   public static final String REQUEST_TYPE = "requestType";
+  public static final String DISTANCES = "distances";
 
   @Override
   public String getTransportMode() {
@@ -34,6 +36,6 @@ public class TravelTimeQueryParameters implements QueryParams<TravelTimeQueryPar
   }
 
   public TravelTimeQueryParameters fuzzy() {
-    return new TravelTimeQueryParameters(null, origin, 0, mode, null, requestType);
+    return new TravelTimeQueryParameters(null, origin, 0, mode, null, requestType, false);
   }
 }
