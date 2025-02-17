@@ -19,6 +19,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -96,6 +97,11 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
 
     val groupedLocations = Iterables.partition(locations, locationSizeLimit);
 
+    List<Property> properties =
+        parameters.isDistances()
+            ? Arrays.asList(Property.TRAVEL_TIME, Property.DISTANCE)
+            : Collections.singletonList(Property.TRAVEL_TIME);
+
     val requests =
         StreamSupport.stream(groupedLocations.spliterator(), true)
             .map(
@@ -116,7 +122,7 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
                                       .collect(Collectors.toList()))
                               .arrivalTime(parameters.getTime())
                               .travelTime(parameters.getTravelTime())
-                              .properties(Collections.singletonList(Property.TRAVEL_TIME))
+                              .properties(properties)
                               .transportation(parameters.getTransportation());
                       val arrivalSearch =
                           parameters
@@ -137,7 +143,7 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
                                       .collect(Collectors.toList()))
                               .departureTime(parameters.getTime())
                               .travelTime(parameters.getTravelTime())
-                              .properties(Collections.singletonList(Property.TRAVEL_TIME))
+                              .properties(properties)
                               .transportation(parameters.getTransportation());
                       val departureSearch =
                           parameters
