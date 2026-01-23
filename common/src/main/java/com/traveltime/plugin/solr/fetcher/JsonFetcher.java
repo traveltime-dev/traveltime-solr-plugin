@@ -60,10 +60,24 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
             .build();
     val builder = TravelTimeSDK.builder().credentials(auth).client(client);
     if (uri != null) {
-      builder.baseProtoUri(uri);
+      builder.baseUri(uri);
     }
     api = builder.build();
     this.locationSizeLimit = locationSizeLimit;
+  }
+
+  private Integer getTravelTime(
+      List<com.traveltime.sdk.dto.responses.timefilter.Property> properties) {
+    return properties.get(0).getTravelTime();
+  }
+
+  private Integer getDistance(
+      List<com.traveltime.sdk.dto.responses.timefilter.Property> properties) {
+    if (properties.size() < 2) {
+      return null;
+    } else {
+      return properties.get(1).getDistance();
+    }
   }
 
   private Integer[] extractTimesDistances(
@@ -75,9 +89,9 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
         .forEach(
             location -> {
               travelTimes[Integer.parseInt(location.getId())] =
-                  location.getProperties().get(0).getTravelTime();
+                  getTravelTime(location.getProperties());
               distances[Integer.parseInt(location.getId())] =
-                  location.getProperties().get(0).getDistance();
+                  getDistance(location.getProperties());
             });
 
     result
@@ -108,7 +122,7 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
                 locationGroup -> {
                   val requestBuilder = TimeFilterRequest.builder();
 
-                  requestBuilder.location(parameters.getLocation()).locations(locations);
+                  requestBuilder.location(parameters.getLocation()).locations(locationGroup);
 
                   switch (parameters.getSearchType()) {
                     case ARRIVAL:
@@ -117,7 +131,7 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
                               .id("search")
                               .arrivalLocationId(parameters.getLocation().getId())
                               .departureLocationIds(
-                                  locations.stream()
+                                  locationGroup.stream()
                                       .map(Location::getId)
                                       .collect(Collectors.toList()))
                               .arrivalTime(parameters.getTime())
@@ -138,7 +152,7 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
                               .id("search")
                               .departureLocationId(parameters.getLocation().getId())
                               .arrivalLocationIds(
-                                  locations.stream()
+                                  locationGroup.stream()
                                       .map(Location::getId)
                                       .collect(Collectors.toList()))
                               .departureTime(parameters.getTime())

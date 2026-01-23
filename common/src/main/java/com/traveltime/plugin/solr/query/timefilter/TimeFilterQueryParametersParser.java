@@ -87,6 +87,17 @@ public class TimeFilterQueryParametersParser<A, E extends Exception> {
       throw adapter.exception("traveltime limit must be > 0");
     }
 
+    boolean distances;
+    try {
+      distances =
+          paramSource
+              .getOptionalParam(TimeFilterQueryParameters.DISTANCES)
+              .map(Boolean::parseBoolean)
+              .orElse(false);
+    } catch (NumberFormatException e) {
+      throw adapter.exception("Couldn't parse distances as a boolean");
+    }
+
     TimeFilterQueryParameters queryParams;
     if (arrivalTime.isPresent()) {
       val locationCoords =
@@ -105,7 +116,7 @@ public class TimeFilterQueryParametersParser<A, E extends Exception> {
               getOrThrow(adapter, transportation),
               rangeOptional,
               TimeFilterQueryParameters.SearchType.ARRIVAL,
-              false);
+              distances);
     } else {
       val locationCoords =
           JsonUtils.fromJson(
@@ -124,7 +135,7 @@ public class TimeFilterQueryParametersParser<A, E extends Exception> {
               getOrThrow(adapter, transportation),
               rangeOptional,
               TimeFilterQueryParameters.SearchType.DEPARTURE,
-              false);
+              distances);
     }
     return queryParams;
   }

@@ -38,6 +38,8 @@ public class TimeFilterQueryParameters implements QueryParams<TimeFilterQueryPar
   public static final String TRANSPORTATION = "transportation";
   public static final String RANGE = "range";
 
+  public static final String DISTANCES = "distances";
+
   @Override
   public Coordinates getOrigin() {
     return location.getCoords();
