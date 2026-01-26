@@ -69,6 +69,23 @@ configure(subprojects - common) {
         implementation 'com.google.guava:guava:25.1-jre'
     }
 
+    shadowJar {
+        // Relocate Jackson to avoid conflicts with Solr's Jackson version
+        relocate 'com.fasterxml.jackson', 'com.traveltime.shaded.jackson'
+        // Relocate OkHttp to avoid conflicts
+        relocate 'okhttp3', 'com.traveltime.shaded.okhttp3'
+        relocate 'okio', 'com.traveltime.shaded.okio'
+        // Relocate Kotlin stdlib (used by OkHttp)
+        relocate 'kotlin', 'com.traveltime.shaded.kotlin'
+        
+        // Exclude signatures to avoid issues
+        exclude 'META-INF/*.SF'
+        exclude 'META-INF/*.DSA'
+        exclude 'META-INF/*.RSA'
+        
+        archiveClassifier.set('all')
+    }
+
     ext.buildPlugin = { project, solrVersion ->
         project.version = project.findProperty('tag') ?: "v0.2-SNAPSHOT"
 
