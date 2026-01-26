@@ -53,11 +53,13 @@ configure(subprojects - common) {
 
     task("dockerBuildTest", type: Exec, dependsOn: [project.shadowJar]) {
         environment "DOCKER_BUILDKIT", "1"
-        commandLine "docker", "build", ".", "-f", "src/test/resources/Dockerfile", "-t", imageName
+        environment "PROJECT_ROOT", rootProject.projectDir
+        commandLine "bash", "${rootProject.projectDir}/common/src/test/resources/docker-build.sh", project.name, imageName
     }
 
     task("dockerTest", type: Exec, dependsOn: "dockerBuildTest") {
         environment "IMAGE_NAME", imageName
+        environment "PROJECT_ROOT", rootProject.projectDir
         commandLine "bash", "src/test/resources/run-tests.sh"
     }
 
