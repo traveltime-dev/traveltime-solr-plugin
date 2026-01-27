@@ -90,8 +90,7 @@ public class JsonFetcher implements Fetcher<TimeFilterQueryParameters> {
             location -> {
               travelTimes[Integer.parseInt(location.getId())] =
                   getTravelTime(location.getProperties());
-              distances[Integer.parseInt(location.getId())] =
-                  getDistance(location.getProperties());
+              distances[Integer.parseInt(location.getId())] = getDistance(location.getProperties());
             });
 
     result
