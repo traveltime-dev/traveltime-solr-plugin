@@ -17,6 +17,10 @@ public class TravelTimeQParserPlugin extends QParserPlugin {
   private boolean isFilteringDisabled = false;
   private String paramPrefix = PARAM_PREFIX;
 
+  private URI uri = null;
+  private String appId = null;
+  private String apiKey = null;
+
   @Override
   public void init(NamedList args) {
     Object cache = args.get("cache");
@@ -30,17 +34,19 @@ public class TravelTimeQParserPlugin extends QParserPlugin {
     if (prefix != null) paramPrefix = prefix.toString();
 
     Object uriVal = args.get("api_uri");
-    URI uri = null;
     if (uriVal != null) uri = URI.create(uriVal.toString());
 
-    String appId = args.get("app_id").toString();
-    String apiKey = args.get("api_key").toString();
-    ProtoFetcherSingleton.INSTANCE.init(uri, appId, apiKey);
+    appId = args.get("app_id").toString();
+    apiKey = args.get("api_key").toString();
   }
 
   @Override
   public QParser createParser(
       String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req) {
+    Thread.currentThread()
+        .setContextClassLoader(req.getCore().getResourceLoader().getClassLoader());
+    ProtoFetcherSingleton.INSTANCE.init(uri, appId, apiKey);
+
     return new TravelTimeQueryParser(
         qstr,
         localParams,

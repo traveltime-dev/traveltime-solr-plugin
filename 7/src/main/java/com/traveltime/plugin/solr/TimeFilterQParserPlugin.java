@@ -18,6 +18,11 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
   private boolean isFilteringDisabled = false;
   private String paramPrefix = PARAM_PREFIX;
 
+  private URI uri = null;
+  private String appId = null;
+  private String apiKey = null;
+  private int locationLimit = -1;
+
   private static final Integer DEFAULT_LOCATION_SIZE_LIMIT = 2000;
 
   @Override
@@ -33,22 +38,24 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
     if (prefix != null) paramPrefix = prefix.toString();
 
     Object uriVal = args.get("api_uri");
-    URI uri = null;
+    uri = null;
     if (uriVal != null) uri = URI.create(uriVal.toString());
 
-    String appId = args.get("app_id").toString();
-    String apiKey = args.get("api_key").toString();
-    int locationLimit =
+    appId = args.get("app_id").toString();
+    apiKey = args.get("api_key").toString();
+    locationLimit =
         Optional.ofNullable(args.get("location_limit"))
             .map(x -> Integer.parseInt(x.toString()))
             .orElse(DEFAULT_LOCATION_SIZE_LIMIT);
-
-    JsonFetcherSingleton.INSTANCE.init(uri, appId, apiKey, locationLimit);
   }
 
   @Override
   public QParser createParser(
       String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req) {
+    Thread.currentThread()
+        .setContextClassLoader(req.getCore().getResourceLoader().getClassLoader());
+    JsonFetcherSingleton.INSTANCE.init(uri, appId, apiKey, locationLimit);
+
     return new TimeFilterQueryParser(
         qstr,
         localParams,
