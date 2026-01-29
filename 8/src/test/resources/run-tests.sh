@@ -2,7 +2,6 @@
 
 # Version-specific configuration for Solr 8
 export DOCKER_EXEC_USER_FLAG="-u 0"
-export POST_COMMAND="post"
 export SCORE_FIELD=""
 
 # Source the common test script

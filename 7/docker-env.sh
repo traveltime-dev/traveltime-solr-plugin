@@ -1,4 +1,5 @@
 #!/bin/bash
 
 export SOLR_VERSION=7.7.3
-export SOLR_LIB_PATH=server/solr/lib
+export POST_COMMAND="post"
+export SOLR_CORE_PATH=server/solr/mycores

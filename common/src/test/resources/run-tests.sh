@@ -1,41 +1,16 @@
 #!/usr/bin/env bash
 
-set -ex
+set -e
 
 trap "docker logs $IMAGE_NAME; docker stop $IMAGE_NAME; exit 1" EXIT
 
 docker run -d --rm --name $IMAGE_NAME $IMAGE_NAME solr-fg -a "-Xss4M"
-docker exec -d $IMAGE_NAME ./mock-proto-server --port 80
-docker exec ${DOCKER_EXEC_USER_FLAG} -d $IMAGE_NAME python3 ./mock-json-server.py 81
-docker exec $IMAGE_NAME bash -c 'sleep 5; solr create_core -c london'
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-field": {"name":"coords", "type":"location", "stored":true}}' http://localhost:8983/solr/london/schema
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-cache": {"name": "traveltime_fuzzy", "class": "com.traveltime.plugin.solr.cache.FuzzyRequestCache", "secondary_size": "150000"}}'  http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-cache": {"name": "traveltime_exact", "class": "com.traveltime.plugin.solr.cache.ExactRequestCache"}}'  http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-cache": {"name": "timefilter_fuzzy", "class": "com.traveltime.plugin.solr.cache.FuzzyTimeFilterRequestCache", "secondary_size": "150000"}}'  http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-cache": {"name": "timefilter_exact", "class": "com.traveltime.plugin.solr.cache.ExactTimeFilterRequestCache"}}'  http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "traveltime", "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "traveltime_e", "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "traveltime_f", "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "cache": "traveltime_fuzzy"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "traveltime_e", "class": "com.traveltime.plugin.solr.query.TravelTimeValueSourceParser", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "distance_e", "class": "com.traveltime.plugin.solr.query.DistanceValueSourceParser", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "traveltime_f", "class": "com.traveltime.plugin.solr.query.TravelTimeValueSourceParser", "cache": "traveltime_fuzzy"}}' http://localhost:8983/solr/london/config
+docker exec -d $IMAGE_NAME /opt/traveltime/mock-proto-server --port 80
+docker exec ${DOCKER_EXEC_USER_FLAG} -d $IMAGE_NAME python3 /opt/traveltime/mock-json-server.py 81
 
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "traveltime_driving", "prefix": "driving_", "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "traveltime_walking", "prefix": "walking_",  "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "traveltime_driving", "prefix": "driving_", "class": "com.traveltime.plugin.solr.query.TravelTimeValueSourceParser", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "traveltime_walking", "prefix": "walking_","class": "com.traveltime.plugin.solr.query.TravelTimeValueSourceParser", "cache": "traveltime_exact"}}' http://localhost:8983/solr/london/config
-
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "traveltime_nofilter", "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "filtering_disabled": true}}' http://localhost:8983/solr/london/config
-
-# Configure TimeFilter query parsers
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "timefilter", "class": "com.traveltime.plugin.solr.TimeFilterQParserPlugin", "api_uri": "http://localhost:81/v4/", "app_id": "id", "api_key": "key", "prefix": "timefilter_"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "timefilter_e", "class": "com.traveltime.plugin.solr.TimeFilterQParserPlugin", "api_uri": "http://localhost:81/v4/", "app_id": "id", "api_key": "key", "cache": "timefilter_exact", "prefix": "timefilter_"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-queryparser": {"name": "timefilter_f", "class": "com.traveltime.plugin.solr.TimeFilterQParserPlugin", "api_uri": "http://localhost:81/v4/", "app_id": "id", "api_key": "key", "cache": "timefilter_fuzzy", "prefix": "timefilter_"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "timefilter_e", "class": "com.traveltime.plugin.solr.query.timefilter.TimeFilterValueSourceParser", "cache": "timefilter_exact", "prefix": "timefilter_"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "timefilter_distance_e", "class": "com.traveltime.plugin.solr.query.timefilter.DistanceValueSourceParser", "cache": "timefilter_exact", "prefix": "timefilter_"}}' http://localhost:8983/solr/london/config
-docker exec $IMAGE_NAME curl -s -o /dev/null -X POST -H 'Content-type:application/json' -d '{"add-valuesourceparser": {"name": "timefilter_f", "class": "com.traveltime.plugin.solr.query.timefilter.TimeFilterValueSourceParser", "cache": "timefilter_fuzzy", "prefix": "timefilter_"}}' http://localhost:8983/solr/london/config
-
-docker exec $IMAGE_NAME ${POST_COMMAND} -c london part0.json
+while ! grep -q "Server Started Server" <(docker logs $IMAGE_NAME) && ! grep -q "Registered new searcher" <(docker logs $IMAGE_NAME); do
+  sleep 1
+done
 
 URL='http://localhost:8983/solr/london/select'
 DATA_ARGS="\
@@ -119,7 +94,7 @@ TF_DEPARTURE_ARGS="\
 
 # Test TimeFilter basic departure search
 docker exec $IMAGE_NAME \
-  curl ${TF_CURL_FLAGS} $TF_DEPARTURE_ARGS --data-urlencode fq="{!timefilter weight=1}" --data-urlencode "fl=id" $URL \
+  curl -s --fail $TF_DEPARTURE_ARGS --data-urlencode fq="{!timefilter weight=1}" --data-urlencode "fl=id" $URL \
   | jq '.response.numFound' | xargs test 0 -lt
 
 # Test TimeFilter with exact cache and value source

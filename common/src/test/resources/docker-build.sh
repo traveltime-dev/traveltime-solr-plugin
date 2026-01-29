@@ -17,5 +17,6 @@ docker build "$PROJECT_ROOT" \
     -f "$SCRIPT_DIR/Dockerfile" \
     --build-arg "SOLR_VERSION=$SOLR_VERSION" \
     --build-arg "VERSION_DIR=$VERSION_DIR" \
-    --build-arg "SOLR_LIB_PATH=$SOLR_LIB_PATH" \
+    --build-arg "SOLR_CORE_PATH=$SOLR_CORE_PATH" \
+    --build-arg "POST_COMMAND=$POST_COMMAND" \
     -t "$IMAGE_NAME"

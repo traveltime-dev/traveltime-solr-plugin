@@ -2,7 +2,6 @@
 
 # Version-specific configuration for Solr 9.4
 export DOCKER_EXEC_USER_FLAG="-u 0"
-export POST_COMMAND="solr post"
 export SCORE_FIELD=",score"
 
 # Source the common test script
