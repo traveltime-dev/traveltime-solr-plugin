@@ -36,12 +36,6 @@ function solr_configure() {
 }
 
 function solr_post() {
-  set +e
-  which solr
-  solr post
-  bash -c "which solr"
-  bash -c "solr post"
-  set -e
   bash -c "${POST_COMMAND} -c london $1"
 }
 

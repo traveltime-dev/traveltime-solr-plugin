@@ -11,8 +11,6 @@ fi
 VERSION_DIR="$1"
 IMAGE_NAME="$2"
 
-source "$PROJECT_ROOT/$VERSION_DIR/docker-env.sh"
-
 docker build "$PROJECT_ROOT" \
     -f "$SCRIPT_DIR/Dockerfile" \
     --build-arg "SOLR_VERSION=$SOLR_VERSION" \

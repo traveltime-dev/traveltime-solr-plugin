@@ -16,8 +16,9 @@ buildscript {
 apply plugin: 'java-library'
 
 def common = project(':common')
+def dockerTests = project(':dockerTests')
 
-configure(subprojects - common) {
+configure(subprojects - common - dockerTests) {
     group = 'com.traveltime'
     version = project.findProperty('tag') ?: 'v0.1-SNAPSHOT'
 
