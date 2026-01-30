@@ -4,7 +4,7 @@ set -ex
 
 trap "docker logs $IMAGE_NAME; docker stop $IMAGE_NAME; exit 1" EXIT
 
-docker run -d --rm --name $IMAGE_NAME $IMAGE_NAME solr-fg -a "-Xss4M"
+docker run -d --rm --name $IMAGE_NAME $IMAGE_NAME solr-foreground -a "-Xss4M"
 docker exec -u 0 -d $IMAGE_NAME /opt/traveltime/mock-proto-server --port 80
 docker exec -u 0 -d $IMAGE_NAME python3 /opt/traveltime/mock-json-server.py 81
 
