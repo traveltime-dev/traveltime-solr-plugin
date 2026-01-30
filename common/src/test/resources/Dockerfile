@@ -2,6 +2,9 @@ ARG SOLR_VERSION
 FROM solr:${SOLR_VERSION}
 
 USER root
+# Copy and run script to fix apt repositories for old Debian versions (Jessie, Stretch)
+COPY --chmod=755 common/src/test/resources/fix-old-debian-repos.sh /opt/traveltime/fix-old-debian-repos.sh
+RUN /opt/traveltime/fix-old-debian-repos.sh
 RUN apt-get update && apt-get install -y python3 && rm -rf /var/lib/apt/lists/*
 USER solr
 
