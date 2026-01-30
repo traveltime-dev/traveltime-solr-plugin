@@ -11,6 +11,7 @@ docker exec -u 0 -d $IMAGE_NAME python3 /opt/traveltime/mock-json-server.py 81
 while ! grep -q "Server Started Server" <(docker logs $IMAGE_NAME) && ! grep -q "Registered new searcher" <(docker logs $IMAGE_NAME); do
   sleep 1
 done
+sleep 10
 
 URL='http://localhost:8983/solr/london/select'
 DATA_ARGS="\
