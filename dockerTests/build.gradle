@@ -1,0 +1,47 @@
+class DockerConfig {
+    String imageVersion
+    String pluginVersion
+    String postCommand
+    String coreLibPath
+    String scoreField
+}
+
+def dockerTestConfigs = {
+    def _6 = ["6.6"].collect { new DockerConfig(imageVersion: it, pluginVersion: "6", postCommand: "post", coreLibPath: "server/solr/mycores", scoreField: "") }
+    def _7 = ["7.0", "7.1", "7.2", "7.3", "7.4", "7.5", "7.6", "7.7"].collect { new DockerConfig(imageVersion: it, pluginVersion: "7", postCommand: "post", coreLibPath: "server/solr/mycores", scoreField: "") }
+    def _8 = ["8.0", "8.1", "8.2", "8.3", "8.4", "8.5", "8.6", "8.7", "8.8", "8.9", "8.10", "8.11"].collect { new DockerConfig(imageVersion: it, pluginVersion: "8", postCommand: "post", coreLibPath: "/var/solr/data", scoreField: "") }
+    def _9_0 = ["9.0", "9.1", "9.2", "9.3"].collect { new DockerConfig(imageVersion: it, pluginVersion: "9.0-3", postCommand: "post", coreLibPath: "/var/solr/data", scoreField: ",score") }
+    def _9_4 = [new DockerConfig(imageVersion: "9.4", pluginVersion: "9.4", postCommand: "post", coreLibPath: "/var/solr/data", scoreField: ",score")]
+    def _9_5 = ["9.5", "9.6", "9.7", "9.8", "9.9", "9.10"].collect { new DockerConfig(imageVersion: it, pluginVersion: "9.4", postCommand: "solr post", coreLibPath: "/var/solr/data", scoreField: ",score") }
+    _6 + _7 + _8 + _9_0 + _9_4 + _9_5
+}
+
+def dockerTestTaskFromConfig = { DockerConfig config ->
+    def imageName = "traveltime-solr-plugin-test_${config.imageVersion.replace('.', '_')}"
+    def pluginProject = rootProject.project("${config.pluginVersion}")
+    def imageString = config.imageVersion
+
+    task("build_${imageString}", type: Exec, dependsOn: [pluginProject.tasks.shadowJar]) {
+        environment "DOCKER_BUILDKIT", "1"
+        environment "PROJECT_ROOT", rootProject.projectDir
+        environment "SOLR_VERSION", config.imageVersion
+        environment "POST_COMMAND", config.postCommand
+        environment "SOLR_CORE_PATH", config.coreLibPath
+        commandLine "bash", "${rootProject.projectDir}/common/src/test/resources/docker-build.sh", config.pluginVersion, imageName
+    }
+
+    task("test_${imageString}", type: Exec, dependsOn: "build_${imageString}") {
+        environment "IMAGE_NAME", imageName
+        environment "PROJECT_ROOT", rootProject.projectDir
+        environment "POST_COMMAND", config.postCommand
+        environment "CORE_LIB_PATH", config.coreLibPath
+        environment "SCORE_FIELD", config.scoreField
+        commandLine "bash", "${rootProject.projectDir}/common/src/test/resources/run-tests.sh"
+    }
+}
+
+configure(project) {
+    dockerTestConfigs().each { config ->
+        dockerTestTaskFromConfig(config)
+    }
+}

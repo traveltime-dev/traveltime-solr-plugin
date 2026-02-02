@@ -16,6 +16,7 @@ sleep 1
 while ! grep -q "Server Started Server" <(cat $logs) && ! grep -q "Registered new searcher" <(cat $logs); do
   sleep 1
 done
+sleep 10
 
 # Create the lib directory for the test core and copy the plugin
 LIB_PATH="$SOLR_CORE_PATH/london/lib/"
@@ -36,12 +37,6 @@ function solr_configure() {
 }
 
 function solr_post() {
-  set +e
-  which solr
-  solr post
-  bash -c "which solr"
-  bash -c "solr post"
-  set -e
   bash -c "${POST_COMMAND} -c london $1"
 }
 

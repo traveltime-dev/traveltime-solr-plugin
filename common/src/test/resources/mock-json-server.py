@@ -111,13 +111,13 @@ class MockTimeFilterHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.log_file.write(f"{timestamp} - {self.client_address[0]} - {format % args}\n")
+        self.log_file.write("{} - {} - {}\n".format(timestamp, self.client_address[0], format % args))
         self.log_file.flush()
 
 
 if __name__ == '__main__':
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 8080
     server = HTTPServer(('0.0.0.0', port), MockTimeFilterHandler)
-    print(f'Mock TimeFilter server listening on port {port}')
+    print('Mock TimeFilter server listening on port {}'.format(port))
     sys.stdout.flush()
     server.serve_forever()

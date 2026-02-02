@@ -16,6 +16,46 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        solrVersion:
+          - '6.6'
+          # Needs code changes, no ScoreSupplier
+          #- '7.0'
+          - '7.1'
+          - '7.2'
+          - '7.3'
+          - '7.4'
+          - '7.5'
+          - '7.6'
+          - '7.7'
+          #Needs code changes, no CaffeineCache
+          #- '8.0'
+          #- '8.1'
+          #- '8.2'
+          - '8.3'
+          - '8.4'
+          - '8.5'
+          #Some weird classloader things, maybe unresolvable
+          #- '8.6'
+          #- '8.7'
+          - '8.8'
+          - '8.9'
+          - '8.10'
+          - '8.11'
+          - '9.0'
+          - '9.1'
+          - '9.2'
+          - '9.3'
+          - '9.4'
+          - '9.5'
+          - '9.6'
+          - '9.7'
+          - '9.8'
+          - '9.9'
+          - '9.10'
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -30,4 +70,4 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Test the plugin
-        run: ./gradlew dockerTest
+        run: ./gradlew dockerTests:test_${{ matrix.solrVersion }}
