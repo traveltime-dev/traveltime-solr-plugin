@@ -8,4 +8,9 @@ import lombok.Getter;
 public class ExactTimeFilterRequestCache extends RequestCache<TimeFilterQueryParameters> {
   private final UnadaptedRequestCache<TimeFilterQueryParameters> unadapted =
       new UnadaptedRequestCache<>(this::get, this::put, Function.identity(), BasicCachedData::new);
+
+  @Override
+  public String getDescription() {
+    return "TravelTime ExactTimeFilterRequestCache - " + super.getDescription();
+  }
 }
