@@ -12,16 +12,19 @@ import java.util.function.Supplier;
 import lombok.val;
 
 public class LRUData extends CachedData {
+  public static final String SECONDARY_SIZE_PARAM = "secondary_size";
+  public static final String DEFAULT_SECONDARY_SIZE = "10000";
+
+  public static String getSecondarySize(Map<String, String> args) {
+    return args.getOrDefault(SECONDARY_SIZE_PARAM, DEFAULT_SECONDARY_SIZE);
+  }
+
   private final AdaptedCache<Coordinates, Integer> coordsToTimes;
 
   public LRUData(
       Map<String, String> args, Supplier<AdaptedCache<Coordinates, Integer>> cacheSupplier) {
     args.putIfAbsent("name", "fuzzy_cache");
-    String size = args.get("secondary_size");
-    if (size == null) {
-      size = "10000";
-    }
-    args.put("size", size);
+    args.put("size", getSecondarySize(args));
 
     coordsToTimes = cacheSupplier.get();
     coordsToTimes.init(args);

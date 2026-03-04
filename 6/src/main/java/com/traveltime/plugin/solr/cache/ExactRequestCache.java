@@ -8,4 +8,9 @@ import lombok.Getter;
 public class ExactRequestCache extends RequestCache<TravelTimeQueryParameters> {
   private final UnadaptedRequestCache<TravelTimeQueryParameters> unadapted =
       new UnadaptedRequestCache<>(this::get, this::put, Function.identity(), BasicCachedData::new);
+
+  @Override
+  public String getDescription() {
+    return "TravelTime ExactRequestCache - " + super.getDescription();
+  }
 }

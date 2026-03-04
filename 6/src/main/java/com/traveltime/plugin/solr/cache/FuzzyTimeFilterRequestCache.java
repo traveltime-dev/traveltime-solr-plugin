@@ -21,4 +21,11 @@ public class FuzzyTimeFilterRequestCache extends RequestCache<TimeFilterQueryPar
           this::put,
           TimeFilterQueryParameters::fuzzy,
           () -> new LRUData(args, AdaptedCacheImpl::new));
+
+  @Override
+  public String getDescription() {
+    return String.format(
+        "TravelTime FuzzyTimeFilterRequestCache(secondary_size=%s) - %s",
+        LRUData.getSecondarySize(args), super.getDescription());
+  }
 }
