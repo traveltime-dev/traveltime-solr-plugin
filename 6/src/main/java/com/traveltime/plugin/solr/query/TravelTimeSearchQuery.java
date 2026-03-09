@@ -57,10 +57,9 @@ public class TravelTimeSearchQuery<Params extends QueryParams<Params>> extends E
   public DelegatingCollector getFilterCollector(IndexSearcher indexSearcher) {
     SolrIndexSearcher searcher = (SolrIndexSearcher) indexSearcher;
     RequestCache<Params> cache = (RequestCache<Params>) searcher.getCache(cacheName);
-    int maxDoc = searcher.maxDoc();
     int leafCount = searcher.getTopReaderContext().leaves().size();
     return new TravelTimeDelegatingCollector<>(
-        maxDoc, leafCount, params, weight, fetcher, cache, isFilteringDisabled);
+        leafCount, params, weight, fetcher, cache, isFilteringDisabled);
   }
 
   @Override

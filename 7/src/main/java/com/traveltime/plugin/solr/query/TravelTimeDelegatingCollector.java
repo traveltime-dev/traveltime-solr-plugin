@@ -8,6 +8,7 @@ import com.traveltime.plugin.solr.util.Util;
 import com.traveltime.sdk.dto.common.Coordinates;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import java.io.IOException;
@@ -17,8 +18,6 @@ import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.SortedNumericDocValues;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
-import org.apache.lucene.util.BitSetIterator;
-import org.apache.lucene.util.FixedBitSet;
 import org.apache.solr.search.DelegatingCollector;
 
 public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
@@ -27,9 +26,8 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
   private final int[] contextBaseStart;
   private final int[] contextBaseEnd;
 
-  private final int maxDoc;
   private final Int2FloatOpenHashMap score;
-  private final FixedBitSet collectedGlobalDocs;
+  private final IntArrayList collectedGlobalDocs;
   private final Params params;
   private final float scoreWeight;
   private final Int2ObjectOpenHashMap<Coordinates> globalDoc2Coords;
@@ -41,20 +39,18 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
   private SortedNumericDocValues coords;
 
   public TravelTimeDelegatingCollector(
-      int maxDoc,
       int segments,
       Params params,
       float scoreWeight,
       Fetcher<Params> fetcher,
       RequestCache<Params> cache,
       boolean isFilteringDisabled) {
-    this.maxDoc = maxDoc;
     this.contexts = new LeafReaderContext[segments];
     this.contextBaseStart = new int[segments];
     this.contextBaseEnd = new int[segments];
-    this.score = new Int2FloatOpenHashMap(maxDoc);
-    this.globalDoc2Coords = new Int2ObjectOpenHashMap<>(maxDoc);
-    this.collectedGlobalDocs = new FixedBitSet(maxDoc);
+    this.score = new Int2FloatOpenHashMap();
+    this.globalDoc2Coords = new Int2ObjectOpenHashMap<>();
+    this.collectedGlobalDocs = new IntArrayList();
     this.params = params;
     this.scoreWeight = scoreWeight;
     this.fetcher = fetcher;
@@ -68,7 +64,8 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
 
     contextBaseStart[context.ord] = context.docBase;
     if (context.ord != 0) contextBaseEnd[context.ord - 1] = context.docBase - 1;
-    if (context.ord == contexts.length - 1) contextBaseEnd[context.ord] = maxDoc;
+    if (context.ord == contexts.length - 1)
+      contextBaseEnd[context.ord] = context.docBase + context.reader().maxDoc();
 
     coords = DocValues.getSortedNumeric(context.reader(), params.getField());
     super.doSetNextReader(context);
@@ -83,7 +80,7 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
   public void collect(int contextDoc) throws IOException {
     if (coords.advanceExact(contextDoc)) {
       int globalDoc = this.docBase + contextDoc;
-      collectedGlobalDocs.set(globalDoc);
+      collectedGlobalDocs.add(globalDoc);
       score.put(globalDoc, scorer.score());
       globalDoc2Coords.put(globalDoc, Util.decode(coords.nextValue()));
     }
@@ -111,12 +108,13 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
             .getTimes()
             .mapToData(params.getTravelTime(), globalDoc2Coords.values());
 
-    val collectedDocs = new BitSetIterator(collectedGlobalDocs, 0L);
-    val forwardingScorer = new ForwardingScorer(collectedDocs);
+    collectedGlobalDocs.sort(null);
+    val forwardingScorer = new ForwardingScorer();
 
     int currentContextIndex = 0;
-    while (collectedDocs.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
-      int globalDoc = collectedDocs.docID();
+    for (int i = 0; i < collectedGlobalDocs.size(); i++) {
+      int globalDoc = collectedGlobalDocs.getInt(i);
+      forwardingScorer.currentDoc = globalDoc;
 
       while (globalDoc > contextBaseEnd[currentContextIndex]) {
         currentContextIndex++;
@@ -137,16 +135,15 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
 
   private class ForwardingScorer extends Scorer {
 
-    private final DocIdSetIterator backingIterator;
+    int currentDoc;
 
-    private ForwardingScorer(DocIdSetIterator backingIterator) {
+    private ForwardingScorer() {
       super(null);
-      this.backingIterator = backingIterator;
     }
 
     @Override
     public int docID() {
-      return backingIterator.docID();
+      return currentDoc;
     }
 
     @Override
