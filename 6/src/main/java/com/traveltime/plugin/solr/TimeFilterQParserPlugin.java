@@ -3,7 +3,8 @@ package com.traveltime.plugin.solr;
 import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
 
 import com.traveltime.plugin.solr.cache.RequestCache;
-import com.traveltime.plugin.solr.fetcher.JsonFetcherSingleton;
+import com.traveltime.plugin.solr.fetcher.FetcherHolder;
+import com.traveltime.plugin.solr.fetcher.JsonFetcher;
 import com.traveltime.plugin.solr.query.timefilter.TimeFilterQueryParser;
 import java.net.URI;
 import java.util.Optional;
@@ -22,6 +23,7 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
   private String appId = null;
   private String apiKey = null;
   private int locationLimit = -1;
+  private final FetcherHolder<JsonFetcher> fetcherHolder = new FetcherHolder<>();
 
   private static final Integer DEFAULT_LOCATION_SIZE_LIMIT = 2000;
 
@@ -51,18 +53,15 @@ public class TimeFilterQParserPlugin extends QParserPlugin {
   @Override
   public QParser createParser(
       String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req) {
-    Thread.currentThread()
-        .setContextClassLoader(req.getCore().getResourceLoader().getClassLoader());
-    JsonFetcherSingleton.INSTANCE.init(uri, appId, apiKey, locationLimit);
+    JsonFetcher fetcher =
+        fetcherHolder.getOrCreate(
+            () -> {
+              Thread.currentThread()
+                  .setContextClassLoader(req.getCore().getResourceLoader().getClassLoader());
+              return new JsonFetcher(uri, appId, apiKey, locationLimit);
+            });
 
     return new TimeFilterQueryParser(
-        qstr,
-        localParams,
-        params,
-        req,
-        JsonFetcherSingleton.INSTANCE.getFetcher(),
-        cacheName,
-        isFilteringDisabled,
-        paramPrefix);
+        qstr, localParams, params, req, fetcher, cacheName, isFilteringDisabled, paramPrefix);
   }
 }

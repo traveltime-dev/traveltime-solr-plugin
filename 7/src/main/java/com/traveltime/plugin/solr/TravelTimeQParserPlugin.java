@@ -3,7 +3,8 @@ package com.traveltime.plugin.solr;
 import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
 
 import com.traveltime.plugin.solr.cache.RequestCache;
-import com.traveltime.plugin.solr.fetcher.ProtoFetcherSingleton;
+import com.traveltime.plugin.solr.fetcher.FetcherHolder;
+import com.traveltime.plugin.solr.fetcher.ProtoFetcher;
 import com.traveltime.plugin.solr.query.TravelTimeQueryParser;
 import java.net.URI;
 import org.apache.solr.common.params.SolrParams;
@@ -20,6 +21,7 @@ public class TravelTimeQParserPlugin extends QParserPlugin {
   private URI uri = null;
   private String appId = null;
   private String apiKey = null;
+  private final FetcherHolder<ProtoFetcher> fetcherHolder = new FetcherHolder<>();
 
   @Override
   public void init(NamedList args) {
@@ -43,18 +45,15 @@ public class TravelTimeQParserPlugin extends QParserPlugin {
   @Override
   public QParser createParser(
       String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req) {
-    Thread.currentThread()
-        .setContextClassLoader(req.getCore().getResourceLoader().getClassLoader());
-    ProtoFetcherSingleton.INSTANCE.init(uri, appId, apiKey);
+    ProtoFetcher fetcher =
+        fetcherHolder.getOrCreate(
+            () -> {
+              Thread.currentThread()
+                  .setContextClassLoader(req.getCore().getResourceLoader().getClassLoader());
+              return new ProtoFetcher(uri, appId, apiKey);
+            });
 
     return new TravelTimeQueryParser(
-        qstr,
-        localParams,
-        params,
-        req,
-        ProtoFetcherSingleton.INSTANCE.getFetcher(),
-        cacheName,
-        isFilteringDisabled,
-        paramPrefix);
+        qstr, localParams, params, req, fetcher, cacheName, isFilteringDisabled, paramPrefix);
   }
 }
