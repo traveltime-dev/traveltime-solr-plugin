@@ -214,8 +214,7 @@ public class TravelTimeSearchQuery<Params extends QueryParams<Params>> extends E
             DocValues.getSortedNumeric(context.reader(), params.getField());
         final NumericDocValues docValues = selectValues(multiDocValues);
 
-        return new TravelTimeScorer(
-            params.getTravelTime(), travelTimes, this, boost, docValues);
+        return new TravelTimeScorer(params.getTravelTime(), travelTimes, this, boost, docValues);
       }
     };
   }
