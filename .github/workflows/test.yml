@@ -21,8 +21,7 @@ jobs:
       matrix:
         solrVersion:
           - '6.6'
-          # Needs code changes, no ScoreSupplier
-          #- '7.0'
+          - '7.0'
           - '7.1'
           - '7.2'
           - '7.3'

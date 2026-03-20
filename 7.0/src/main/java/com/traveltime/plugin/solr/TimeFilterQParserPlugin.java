@@ -1,0 +1,68 @@
+package com.traveltime.plugin.solr;
+
+import static com.traveltime.plugin.solr.query.ParamSource.PARAM_PREFIX;
+
+import com.traveltime.plugin.solr.cache.RequestCache;
+import com.traveltime.plugin.solr.fetcher.FetcherHolder;
+import com.traveltime.plugin.solr.fetcher.JsonFetcher;
+import com.traveltime.plugin.solr.query.timefilter.TimeFilterQueryParser;
+import java.net.URI;
+import java.util.Optional;
+import org.apache.solr.common.params.SolrParams;
+import org.apache.solr.common.util.NamedList;
+import org.apache.solr.request.SolrQueryRequest;
+import org.apache.solr.search.QParser;
+import org.apache.solr.search.QParserPlugin;
+
+public class TimeFilterQParserPlugin extends QParserPlugin {
+  private String cacheName = RequestCache.NAME;
+  private boolean isFilteringDisabled = false;
+  private String paramPrefix = PARAM_PREFIX;
+
+  private URI uri = null;
+  private String appId = null;
+  private String apiKey = null;
+  private int locationLimit = -1;
+  private final FetcherHolder<JsonFetcher> fetcherHolder = new FetcherHolder<>();
+
+  private static final Integer DEFAULT_LOCATION_SIZE_LIMIT = 2000;
+
+  @Override
+  public void init(NamedList args) {
+    Object cache = args.get("cache");
+    if (cache != null) cacheName = cache.toString();
+
+    Object filteringDisabled = args.get("filtering_disabled");
+    if (filteringDisabled != null)
+      this.isFilteringDisabled = Boolean.parseBoolean(filteringDisabled.toString());
+
+    Object prefix = args.get("prefix");
+    if (prefix != null) paramPrefix = prefix.toString();
+
+    Object uriVal = args.get("api_uri");
+    uri = null;
+    if (uriVal != null) uri = URI.create(uriVal.toString());
+
+    appId = args.get("app_id").toString();
+    apiKey = args.get("api_key").toString();
+    locationLimit =
+        Optional.ofNullable(args.get("location_limit"))
+            .map(x -> Integer.parseInt(x.toString()))
+            .orElse(DEFAULT_LOCATION_SIZE_LIMIT);
+  }
+
+  @Override
+  public QParser createParser(
+      String qstr, SolrParams localParams, SolrParams params, SolrQueryRequest req) {
+    JsonFetcher fetcher =
+        fetcherHolder.getOrCreate(
+            () -> {
+              Thread.currentThread()
+                  .setContextClassLoader(req.getCore().getResourceLoader().getClassLoader());
+              return new JsonFetcher(uri, appId, apiKey, locationLimit);
+            });
+
+    return new TimeFilterQueryParser(
+        qstr, localParams, params, req, fetcher, cacheName, isFilteringDisabled, paramPrefix);
+  }
+}
