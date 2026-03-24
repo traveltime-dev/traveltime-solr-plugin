@@ -102,7 +102,6 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
             .getTimes()
             .mapToData(params.getTravelTime(), globalDoc2Coords.values());
 
-    collectedGlobalDocs.sort(null);
     val forwardingScorer = new ForwardingScorer();
 
     int currentContextIndex = 0;
