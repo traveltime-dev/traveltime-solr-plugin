@@ -63,6 +63,15 @@ solr_configure '{"add-queryparser": {"name": "traveltime_walking", "prefix": "wa
 solr_configure '{"add-valuesourceparser": {"name": "traveltime_driving", "prefix": "driving_", "class": "com.traveltime.plugin.solr.query.TravelTimeValueSourceParser", "cache": "traveltime_exact"}}'
 solr_configure '{"add-valuesourceparser": {"name": "traveltime_walking", "prefix": "walking_","class": "com.traveltime.plugin.solr.query.TravelTimeValueSourceParser", "cache": "traveltime_exact"}}'
 
+# Fuzzy caches for only_positive testing (secondary_size=63000, just above the filtered candidate count)
+solr_configure '{"add-cache": {"name": "traveltime_fuzzy_op", "class": "com.traveltime.plugin.solr.cache.FuzzyRequestCache", "secondary_size": "50000", "only_positive": "true"}}'
+solr_configure '{"add-queryparser": {"name": "traveltime_fop", "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "cache": "traveltime_fuzzy_op"}}'
+solr_configure '{"add-valuesourceparser": {"name": "traveltime_fop", "class": "com.traveltime.plugin.solr.query.TravelTimeValueSourceParser", "cache": "traveltime_fuzzy_op"}}'
+
+solr_configure '{"add-cache": {"name": "traveltime_fuzzy_nop", "class": "com.traveltime.plugin.solr.cache.FuzzyRequestCache", "secondary_size": "50000"}}'
+solr_configure '{"add-queryparser": {"name": "traveltime_fnop", "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "cache": "traveltime_fuzzy_nop"}}'
+solr_configure '{"add-valuesourceparser": {"name": "traveltime_fnop", "class": "com.traveltime.plugin.solr.query.TravelTimeValueSourceParser", "cache": "traveltime_fuzzy_nop"}}'
+
 # No-filter queryparser
 solr_configure '{"add-queryparser": {"name": "traveltime_nofilter", "class": "com.traveltime.plugin.solr.TravelTimeQParserPlugin", "api_uri": "http://localhost/", "app_id": "id", "api_key": "key", "filtering_disabled": true}}'
 
