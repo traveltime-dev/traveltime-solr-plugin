@@ -52,7 +52,7 @@ public class BasicCachedData extends CachedData {
       coords.forEach(
           coord -> {
             int time = coordsToTimes.getOrDefault(coord, -1);
-            if (time > 0) {
+            if (time >= 0) {
               pointToTime.put(coord, time);
             }
           });

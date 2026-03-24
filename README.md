@@ -169,9 +169,37 @@ This produces a score in the range of `[0.5, 1]` for reachable points, with shor
 Request caches can be used to enable the `valueSourceParser` and to reduce request latency for some workloads.
 The plugin provides two request cache implementations: `ExactRequestCache` and `FuzzyRequestCache`.
 
-`ExactRequestCache` uses all of the traveltime query parameters as a cache key.
-Therefore, changing any of the parameters will result in a cache miss.
-This is recommended if the cache is only needed to display the times in search results, or if the query parameters are mostly static.
+### ExactRequestCache
 
-`FuzzyRequestCache` uses only the `origin` and `mode` fields as cache keys.
-This cache is useful for workloads where the set of possible `origin` parameters is limited since it will limit the amount of API calls needed to fetch data from TravelTime. The `secondary_size` controls the size of each per-origin traveltime cache. It should be set to at least the number of documents returned by each query.
+Uses all the traveltime query parameters as the cache key.
+Changing any parameter (origin, limit, mode, country, etc.) will result in a cache miss.
+For a single cache entry the coordinate-to-traveltime map is unbounded, so there is no per-coordinate eviction.
+However, the cache entries themselves (keyed by the full parameter set) are subject to eviction from the outer Solr cache.
+
+### FuzzyRequestCache
+
+Uses only the `origin` and `mode` fields as cache keys.
+This means queries with the same origin and mode but different limits share a single cache entry, reducing the number of API calls when the origin set is small or repeated.
+By default the cache also stores negative results; that is if we know a point is unreachable with a 1800-second limit, we can derive that it will be unreachable with a 900-second limit.
+
+The per-origin cache is an LRU cache whose size is controlled by the `secondary_size` parameter (default: `10000`).
+When the cache is full, the least-recently-used entries are evicted.
+
+`secondary_size` should be set to at least the number of candidate documents that pass through the traveltime filter in a single query (i.e. the documents matching all non-traveltime filters).
+If it is too small, reachable entries may be evicted and results may become unpredictable, since travel time values will be unavailable for scoring or display.
+
+Configuration parameters:
+- `secondary_size`: maximum number of coordinate entries in the per-origin LRU cache. Default: `10000`.
+- `only_positive`: when set to `true`, only coordinates with a non-negative travel time (reachable destinations) are stored.
+Unreachable coordinates are not cached and will be re-fetched from the API on each request, but they will not evict reachable entries from the LRU.
+Default: `false`.
+
+Example:
+```xml
+<cache name="traveltime" class="com.traveltime.plugin.solr.cache.FuzzyRequestCache" secondary_size="150000" only_positive="true"/>
+```
+
+Recommended when:
+- The set of possible origins is limited (e.g. a small number of search locations).
+- You want to share cached travel times across queries with different limits.
+- You can size `secondary_size` appropriately for your index.

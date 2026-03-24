@@ -60,6 +60,31 @@ docker exec $IMAGE_NAME \
   curl -s --fail $DATA_ARGS --data-urlencode fq="{!traveltime_nofilter weight=1}" --data-urlencode "fl=id" $URL \
   | jq '.response.numFound' | xargs test 103821 -eq
 
+# Test only_positive fuzzy cache parameter.
+# Both fuzzy caches have secondary_size=50000, smaller than the filtered candidate count (~62107).
+# The only_positive=true cache stores only reachable coords (139 << 50000), so no eviction.
+# The only_positive=false cache stores all 62107, overflowing the 50k LRU and evicting some reachable entries.
+
+# Get the correct filtered+reachable count from the exact cache (always correct, no eviction)
+EXPECTED=$(docker exec $IMAGE_NAME \
+  curl -s --fail $DATA_ARGS --data-urlencode "fq=bedrooms:[2 TO *]" --data-urlencode "fq=price:[* TO 300000]" --data-urlencode fq="{!traveltime_e weight=1}" --data-urlencode "fl=id" $URL \
+  | jq '.response.numFound')
+echo "Expected filtered+reachable count: $EXPECTED"
+
+# only_positive=true should match exact cache
+ACTUAL_OP=$(docker exec $IMAGE_NAME \
+  curl -s --fail $DATA_ARGS --data-urlencode "fq=bedrooms:[2 TO *]" --data-urlencode "fq=price:[* TO 300000]" --data-urlencode fq="{!traveltime_fop weight=1}" --data-urlencode "fl=id" $URL \
+  | jq '.response.numFound')
+echo "only_positive=true count: $ACTUAL_OP (expected: $EXPECTED)"
+test "$ACTUAL_OP" -eq "$EXPECTED"
+
+# only_positive=false should return fewer results due to LRU eviction
+ACTUAL_NOP=$(docker exec $IMAGE_NAME \
+  curl -s --fail $DATA_ARGS --data-urlencode "fq=bedrooms:[2 TO *]" --data-urlencode "fq=price:[* TO 300000]" --data-urlencode fq="{!traveltime_fnop weight=1}" --data-urlencode "fl=id" $URL \
+  | jq '.response.numFound')
+echo "only_positive=false count: $ACTUAL_NOP (expected less than: $EXPECTED)"
+test "$ACTUAL_NOP" -lt "$EXPECTED"
+
 DUAL_ARGS="\
   --data-urlencode walking_field=coords\
   --data-urlencode walking_limit=50\

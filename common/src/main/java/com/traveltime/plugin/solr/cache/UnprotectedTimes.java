@@ -18,7 +18,7 @@ public class UnprotectedTimes extends CachedData {
 
   public void putAll(int ignored, ArrayList<Coordinates> coords, List<Integer> times) {
     for (int index = 0; index < times.size(); index++) {
-      if (times.get(index) > 0) {
+      if (times.get(index) >= 0) {
         coordsToTimes.put(coords.get(index), times.get(index).intValue());
       }
     }

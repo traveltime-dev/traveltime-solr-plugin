@@ -14,17 +14,20 @@ import lombok.val;
 public class LRUData extends CachedData {
   public static final String SECONDARY_SIZE_PARAM = "secondary_size";
   public static final String DEFAULT_SECONDARY_SIZE = "10000";
+  public static final String ONLY_POSITIVE_PARAM = "only_positive";
 
   public static String getSecondarySize(Map<String, String> args) {
     return args.getOrDefault(SECONDARY_SIZE_PARAM, DEFAULT_SECONDARY_SIZE);
   }
 
   private final AdaptedCache<Coordinates, Integer> coordsToTimes;
+  private final boolean onlyPositive;
 
   public LRUData(
       Map<String, String> args, Supplier<AdaptedCache<Coordinates, Integer>> cacheSupplier) {
     args.putIfAbsent("name", "fuzzy_cache");
     args.put("size", getSecondarySize(args));
+    onlyPositive = Boolean.parseBoolean(args.getOrDefault(ONLY_POSITIVE_PARAM, "false"));
 
     coordsToTimes = cacheSupplier.get();
     coordsToTimes.init(args);
@@ -47,9 +50,12 @@ public class LRUData extends CachedData {
   public void putAll(int limit, ArrayList<Coordinates> coords, List<Integer> times) {
     for (int index = 0; index < times.size(); index++) {
       int time = times.get(index);
+      if (onlyPositive && time < 0) continue;
       if (time < 0) {
         Integer stored = coordsToTimes.get(coords.get(index));
-        if (stored != null && stored < 0) {
+        if (stored == null) {
+          time = -limit;
+        } else if (stored < 0) {
           time = Math.min(-limit, stored);
         }
       }
@@ -64,7 +70,7 @@ public class LRUData extends CachedData {
     coords.forEach(
         coord -> {
           Integer time = coordsToTimes.get(coord);
-          if (time != null && time > 0 && time <= limit) {
+          if (time != null && time >= 0 && time <= limit) {
             pointToTime.put(coord, time.intValue());
           }
         });
