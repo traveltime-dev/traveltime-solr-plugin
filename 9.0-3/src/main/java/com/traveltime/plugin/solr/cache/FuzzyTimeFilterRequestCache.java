@@ -17,10 +17,7 @@ public class FuzzyTimeFilterRequestCache extends RequestCache<TimeFilterQueryPar
 
   private final UnadaptedRequestCache<TimeFilterQueryParameters> unadapted =
       new UnadaptedRequestCache<>(
-          this::get,
-          this::put,
-          TimeFilterQueryParameters::fuzzy,
-          () -> new LRUData(args, AdaptedCacheImpl::new));
+          this::get, this::put, TimeFilterQueryParameters::fuzzy, () -> new LRUData(args));
 
   @Override
   public String getDescription() {

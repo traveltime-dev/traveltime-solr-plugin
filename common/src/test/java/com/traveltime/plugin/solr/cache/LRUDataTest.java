@@ -11,32 +11,6 @@ import org.junit.jupiter.api.Test;
 
 class LRUDataTest {
 
-  static class TestLRUCache implements AdaptedCache<Coordinates, Integer> {
-    private LinkedHashMap<Coordinates, Integer> map;
-
-    @Override
-    public void init(Map<String, String> args) {
-      int maxSize = Integer.parseInt(args.get("size"));
-      map =
-          new LinkedHashMap<>(maxSize, 0.75f, true) {
-            @Override
-            protected boolean removeEldestEntry(Map.Entry<Coordinates, Integer> eldest) {
-              return size() > maxSize;
-            }
-          };
-    }
-
-    @Override
-    public Integer get(Coordinates key) {
-      return map.get(key);
-    }
-
-    @Override
-    public void put(Coordinates key, Integer value) {
-      map.put(key, value);
-    }
-  }
-
   private static Coordinates coord(int i) {
     return new Coordinates(51.0 + i * 0.01, -0.1);
   }
@@ -45,7 +19,7 @@ class LRUDataTest {
     Map<String, String> args = new HashMap<>();
     args.put("secondary_size", String.valueOf(size));
     args.put("only_positive", String.valueOf(onlyPositive));
-    return new LRUData(args, TestLRUCache::new);
+    return new LRUData(args);
   }
 
   private static ObjectCollection<Coordinates> coordList(Coordinates... coords) {

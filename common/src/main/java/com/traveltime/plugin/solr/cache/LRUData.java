@@ -1,5 +1,7 @@
 package com.traveltime.plugin.solr.cache;
 
+import static com.traveltime.plugin.solr.cache.PrimitiveLRUCache.MISSING;
+
 import com.traveltime.sdk.dto.common.Coordinates;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
@@ -8,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
 import lombok.val;
 
 public class LRUData extends CachedData {
@@ -20,17 +21,13 @@ public class LRUData extends CachedData {
     return args.getOrDefault(SECONDARY_SIZE_PARAM, DEFAULT_SECONDARY_SIZE);
   }
 
-  private final AdaptedCache<Coordinates, Integer> coordsToTimes;
+  private final PrimitiveLRUCache coordsToTimes;
   private final boolean onlyPositive;
 
-  public LRUData(
-      Map<String, String> args, Supplier<AdaptedCache<Coordinates, Integer>> cacheSupplier) {
-    args.putIfAbsent("name", "fuzzy_cache");
-    args.put("size", getSecondarySize(args));
+  public LRUData(Map<String, String> args) {
+    int size = Integer.parseInt(args.getOrDefault(SECONDARY_SIZE_PARAM, DEFAULT_SECONDARY_SIZE));
     onlyPositive = Boolean.parseBoolean(args.getOrDefault(ONLY_POSITIVE_PARAM, "false"));
-
-    coordsToTimes = cacheSupplier.get();
-    coordsToTimes.init(args);
+    coordsToTimes = new PrimitiveLRUCache(size);
   }
 
   @Override
@@ -38,8 +35,8 @@ public class LRUData extends CachedData {
     val nonCachedSet = new ObjectOpenHashSet<Coordinates>();
     coords.forEach(
         coord -> {
-          Integer time = coordsToTimes.get(coord);
-          if (time == null || (time < 0 && time > -limit)) {
+          int time = coordsToTimes.get(coord);
+          if (time == MISSING || (time < 0 && time > -limit)) {
             nonCachedSet.add(coord);
           }
         });
@@ -52,8 +49,8 @@ public class LRUData extends CachedData {
       int time = times.get(index);
       if (onlyPositive && time < 0) continue;
       if (time < 0) {
-        Integer stored = coordsToTimes.get(coords.get(index));
-        if (stored == null) {
+        int stored = coordsToTimes.get(coords.get(index));
+        if (stored == MISSING) {
           time = -limit;
         } else if (stored < 0) {
           time = Math.min(-limit, stored);
@@ -69,9 +66,9 @@ public class LRUData extends CachedData {
     val pointToTime = new Object2IntOpenHashMap<Coordinates>(coords.size());
     coords.forEach(
         coord -> {
-          Integer time = coordsToTimes.get(coord);
-          if (time != null && time >= 0 && time <= limit) {
-            pointToTime.put(coord, time.intValue());
+          int time = coordsToTimes.get(coord);
+          if (time >= 0 && time <= limit) {
+            pointToTime.put(coord, time);
           }
         });
 
@@ -80,8 +77,8 @@ public class LRUData extends CachedData {
 
   @Override
   public int get(Coordinates coord) {
-    Integer time = coordsToTimes.get(coord);
-    if (time == null || time < 0) return -1;
+    int time = coordsToTimes.get(coord);
+    if (time < 0) return -1;
     return time;
   }
 }
