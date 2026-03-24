@@ -21,8 +21,7 @@ jobs:
       matrix:
         solrVersion:
           - '6.6'
-          # Needs code changes, no ScoreSupplier
-          #- '7.0'
+          - '7.0'
           - '7.1'
           - '7.2'
           - '7.3'
@@ -30,16 +29,14 @@ jobs:
           - '7.5'
           - '7.6'
           - '7.7'
-          #Needs code changes, no CaffeineCache
-          #- '8.0'
-          #- '8.1'
-          #- '8.2'
+          - '8.0'
+          - '8.1'
+          - '8.2'
           - '8.3'
           - '8.4'
           - '8.5'
-          #Some weird classloader things, maybe unresolvable
-          #- '8.6'
-          #- '8.7'
+          - '8.6'
+          - '8.7'
           - '8.8'
           - '8.9'
           - '8.10'

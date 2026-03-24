@@ -15,10 +15,12 @@ COPY --chown=solr common/src/test/resources/mock-json-server.py /opt/traveltime/
 ARG VERSION_DIR
 ARG SOLR_CORE_PATH
 ARG POST_COMMAND
+ARG SOLR_OPTS=""
 
 ENV POST_COMMAND="${POST_COMMAND}"
 ENV SOLR_CORE_PATH="${SOLR_CORE_PATH}"
 ENV SOLR_SECURITY_MANAGER_ENABLED=false
+ENV SOLR_OPTS="${SOLR_OPTS}"
 
 COPY --chown=solr ${VERSION_DIR}/build/libs/*.jar /opt/traveltime/
 COPY --chown=solr --chmod=+x common/src/test/resources/prepare.sh /opt/traveltime/
