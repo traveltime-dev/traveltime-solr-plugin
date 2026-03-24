@@ -53,7 +53,9 @@ public class LRUData extends CachedData {
       if (onlyPositive && time < 0) continue;
       if (time < 0) {
         Integer stored = coordsToTimes.get(coords.get(index));
-        if (stored != null && stored < 0) {
+        if (stored == null) {
+          time = -limit;
+        } else if (stored < 0) {
           time = Math.min(-limit, stored);
         }
       }
