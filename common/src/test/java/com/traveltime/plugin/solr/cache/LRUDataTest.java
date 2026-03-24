@@ -139,6 +139,18 @@ class LRUDataTest {
   }
 
   @Test
+  void mapToDataIncludesZeroTravelTime() {
+    LRUData data = createCache(100, false);
+    Coordinates c = coord(0);
+
+    data.putAll(1000, destList(c), List.of(0));
+
+    Object2IntOpenHashMap<Coordinates> result = data.mapToData(1000, coordList(c));
+    assertEquals(1, result.size(), "Zero travel time should be included in results");
+    assertEquals(0, result.getInt(c));
+  }
+
+  @Test
   void onlyPositiveStoresZeroTravelTime() {
     LRUData data = createCache(100, true);
     Coordinates c = coord(0);

@@ -70,7 +70,7 @@ public class LRUData extends CachedData {
     coords.forEach(
         coord -> {
           Integer time = coordsToTimes.get(coord);
-          if (time != null && time > 0 && time <= limit) {
+          if (time != null && time >= 0 && time <= limit) {
             pointToTime.put(coord, time.intValue());
           }
         });
