@@ -12,7 +12,7 @@ import lombok.val;
 
 public class BasicCachedData extends CachedData {
   private final StampedLock rwLock = new StampedLock();
-  private final Object2IntOpenHashMap<Coordinates> coordsToTimes = new Object2IntOpenHashMap<>();
+  private final CoordToIntMap coordsToTimes = new CoordToIntMap();
 
   @Override
   public Set<Coordinates> nonCached(int ignored, ObjectCollection<Coordinates> coords) {
