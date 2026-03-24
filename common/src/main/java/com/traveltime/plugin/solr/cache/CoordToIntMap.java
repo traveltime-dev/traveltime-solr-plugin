@@ -7,19 +7,27 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
  * A Coordinates → int map backed by a primitive Long2IntOpenHashMap. Coordinates are encoded to
  * longs via {@link CoordEncoding}, avoiding object overhead per entry.
  */
-class CoordToIntMap {
+public class CoordToIntMap {
   private final Long2IntOpenHashMap map;
 
   CoordToIntMap() {
     map = new Long2IntOpenHashMap();
   }
 
-  int getOrDefault(Coordinates coord, int defaultValue) {
+  CoordToIntMap(int expectedSize) {
+    map = new Long2IntOpenHashMap(expectedSize);
+  }
+
+  public int getOrDefault(Coordinates coord, int defaultValue) {
     return map.getOrDefault(CoordEncoding.encode(coord), defaultValue);
   }
 
-  boolean containsKey(Coordinates coord) {
+  public boolean containsKey(Coordinates coord) {
     return map.containsKey(CoordEncoding.encode(coord));
+  }
+
+  public int size() {
+    return map.size();
   }
 
   void put(Coordinates coord, int value) {

@@ -3,7 +3,6 @@ package com.traveltime.plugin.solr.cache;
 import static com.traveltime.plugin.solr.cache.PrimitiveLRUCache.MISSING;
 
 import com.traveltime.sdk.dto.common.Coordinates;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.ArrayList;
@@ -61,9 +60,8 @@ public class LRUData extends CachedData {
   }
 
   @Override
-  public Object2IntOpenHashMap<Coordinates> mapToData(
-      int limit, ObjectCollection<Coordinates> coords) {
-    val pointToTime = new Object2IntOpenHashMap<Coordinates>(coords.size());
+  public CoordToIntMap mapToData(int limit, ObjectCollection<Coordinates> coords) {
+    val pointToTime = new CoordToIntMap(coords.size());
     coords.forEach(
         coord -> {
           int time = coordsToTimes.get(coord);

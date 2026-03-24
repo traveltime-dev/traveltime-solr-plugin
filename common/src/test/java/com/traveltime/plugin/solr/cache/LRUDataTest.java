@@ -3,7 +3,7 @@ package com.traveltime.plugin.solr.cache;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.traveltime.sdk.dto.common.Coordinates;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import java.util.*;
@@ -78,9 +78,9 @@ class LRUDataTest {
     Set<Coordinates> nc = data.nonCached(1000, coordList(c));
     assertTrue(nc.isEmpty());
 
-    Object2IntOpenHashMap<Coordinates> result = data.mapToData(1000, coordList(c));
+    CoordToIntMap result = data.mapToData(1000, coordList(c));
     assertEquals(1, result.size());
-    assertEquals(500, result.getInt(c));
+    assertEquals(500, result.getOrDefault(c, -1));
   }
 
   @Test
@@ -91,8 +91,8 @@ class LRUDataTest {
     data.putAll(1000, destList(c), List.of(800));
 
     // Query with smaller limit: 800 > 500 → excluded
-    Object2IntOpenHashMap<Coordinates> result = data.mapToData(500, coordList(c));
-    assertTrue(result.isEmpty(), "Time 800 should be excluded when limit is 500");
+    CoordToIntMap result = data.mapToData(500, coordList(c));
+    assertTrue(result.size() == 0, "Time 800 should be excluded when limit is 500");
   }
 
   @Test
@@ -119,9 +119,9 @@ class LRUDataTest {
 
     data.putAll(1000, destList(c), List.of(0));
 
-    Object2IntOpenHashMap<Coordinates> result = data.mapToData(1000, coordList(c));
+    CoordToIntMap result = data.mapToData(1000, coordList(c));
     assertEquals(1, result.size(), "Zero travel time should be included in results");
-    assertEquals(0, result.getInt(c));
+    assertEquals(0, result.getOrDefault(c, -1));
   }
 
   @Test
@@ -161,7 +161,7 @@ class LRUDataTest {
 
     // All 5 reachable should still be in cache
     ObjectCollection<Coordinates> all = new ObjectArrayList<>(reachable);
-    Object2IntOpenHashMap<Coordinates> result = data.mapToData(limit, all);
+    CoordToIntMap result = data.mapToData(limit, all);
     assertEquals(
         cacheSize, result.size(), "All reachable coords should survive when only_positive=true");
   }
@@ -191,7 +191,7 @@ class LRUDataTest {
     data.putAll(limit, unreachable, unreachableTimes);
 
     ObjectCollection<Coordinates> all = new ObjectArrayList<>(reachable);
-    Object2IntOpenHashMap<Coordinates> result = data.mapToData(limit, all);
+    CoordToIntMap result = data.mapToData(limit, all);
     assertTrue(
         result.size() < cacheSize,
         "Some reachable coords should be evicted when only_positive=false and cache is full");

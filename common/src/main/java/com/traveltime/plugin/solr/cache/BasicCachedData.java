@@ -1,7 +1,6 @@
 package com.traveltime.plugin.solr.cache;
 
 import com.traveltime.sdk.dto.common.Coordinates;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.ArrayList;
@@ -44,11 +43,10 @@ public class BasicCachedData extends CachedData {
   }
 
   @Override
-  public Object2IntOpenHashMap<Coordinates> mapToData(
-      int ignored, ObjectCollection<Coordinates> coords) {
+  public CoordToIntMap mapToData(int ignored, ObjectCollection<Coordinates> coords) {
     long read = rwLock.readLock();
     try {
-      val pointToTime = new Object2IntOpenHashMap<Coordinates>(coords.size());
+      val pointToTime = new CoordToIntMap(coords.size());
       coords.forEach(
           coord -> {
             int time = coordsToTimes.getOrDefault(coord, -1);

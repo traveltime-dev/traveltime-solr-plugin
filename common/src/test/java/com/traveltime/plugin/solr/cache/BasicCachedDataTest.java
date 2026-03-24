@@ -3,7 +3,7 @@ package com.traveltime.plugin.solr.cache;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.traveltime.sdk.dto.common.Coordinates;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import java.util.ArrayList;
@@ -33,9 +33,9 @@ class BasicCachedDataTest {
 
     data.putAll(0, destList(c), List.of(0));
 
-    Object2IntOpenHashMap<Coordinates> result = data.mapToData(0, coordList(c));
+    CoordToIntMap result = data.mapToData(0, coordList(c));
     assertEquals(1, result.size(), "Zero travel time should be included in results");
-    assertEquals(0, result.getInt(c));
+    assertEquals(0, result.getOrDefault(c, -1));
   }
 
   @Test
@@ -45,8 +45,8 @@ class BasicCachedDataTest {
 
     data.putAll(0, destList(c), List.of(-1));
 
-    Object2IntOpenHashMap<Coordinates> result = data.mapToData(0, coordList(c));
-    assertTrue(result.isEmpty(), "Negative travel time should be excluded");
+    CoordToIntMap result = data.mapToData(0, coordList(c));
+    assertTrue(result.size() == 0, "Negative travel time should be excluded");
   }
 
   @Test
