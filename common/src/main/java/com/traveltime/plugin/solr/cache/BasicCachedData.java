@@ -63,16 +63,18 @@ public class BasicCachedData extends CachedData {
 
   @Override
   public int get(Coordinates coord) {
-    long read = rwLock.tryOptimisticRead();
-    int time = coordsToTimes.getOrDefault(coord, -1);
-    if (!rwLock.validate(read)) {
-      read = rwLock.readLock();
-      try {
-        time = coordsToTimes.getOrDefault(coord, -1);
-      } finally {
-        rwLock.unlock(read);
-      }
+    long stamp = rwLock.tryOptimisticRead();
+    try {
+      int time = coordsToTimes.getOrDefault(coord, -1);
+      if (rwLock.validate(stamp)) return time;
+    } catch (RuntimeException ignored) {
+      // Concurrent resize of the backing array during optimistic read
     }
-    return time;
+    stamp = rwLock.readLock();
+    try {
+      return coordsToTimes.getOrDefault(coord, -1);
+    } finally {
+      rwLock.unlock(stamp);
+    }
   }
 }
