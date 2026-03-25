@@ -1,7 +1,6 @@
 package com.traveltime.plugin.solr.cache;
 
 import com.traveltime.sdk.dto.common.Coordinates;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.ArrayList;
@@ -10,7 +9,7 @@ import java.util.Set;
 
 // Only for use within TravelTimeDelegatingCollector if no cache is set up
 public class UnprotectedTimes extends CachedData {
-  private final Object2IntOpenHashMap<Coordinates> coordsToTimes = new Object2IntOpenHashMap<>();
+  private final CoordToIntMap coordsToTimes = new CoordToIntMap();
 
   public Set<Coordinates> nonCached(int ignored, ObjectCollection<Coordinates> coords) {
     return new ObjectOpenHashSet<>(coords);
@@ -24,8 +23,7 @@ public class UnprotectedTimes extends CachedData {
     }
   }
 
-  public Object2IntOpenHashMap<Coordinates> mapToData(
-      int ignored, ObjectCollection<Coordinates> coords) {
+  public CoordToIntMap mapToData(int ignored, ObjectCollection<Coordinates> coords) {
     return coordsToTimes;
   }
 

@@ -1,6 +1,7 @@
 package com.traveltime.plugin.solr.query;
 
 import com.traveltime.plugin.solr.cache.RequestCache;
+import com.traveltime.plugin.solr.cache.CoordToIntMap;
 import com.traveltime.plugin.solr.cache.UnadaptedRequestCache;
 import com.traveltime.plugin.solr.cache.UnprotectedTimes;
 import com.traveltime.plugin.solr.fetcher.Fetcher;
@@ -9,7 +10,7 @@ import com.traveltime.sdk.dto.common.Coordinates;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import java.io.IOException;
 import lombok.val;
@@ -34,7 +35,7 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
   private final RequestCache<Params> cache;
   private final boolean isFilteringDisabled;
 
-  private Object2IntOpenHashMap<Coordinates> pointToTime;
+  private CoordToIntMap pointToTime;
   private SortedNumericDocValues coords;
 
   public TravelTimeDelegatingCollector(
@@ -102,7 +103,6 @@ public class TravelTimeDelegatingCollector<Params extends QueryParams<Params>>
             .getTimes()
             .mapToData(params.getTravelTime(), globalDoc2Coords.values());
 
-    collectedGlobalDocs.sort(null);
     val forwardingScorer = new ForwardingScorer();
 
     int currentContextIndex = 0;

@@ -1,7 +1,6 @@
 package com.traveltime.plugin.solr.cache;
 
 import com.traveltime.sdk.dto.common.Coordinates;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import java.util.ArrayList;
@@ -12,7 +11,7 @@ import lombok.val;
 
 public class BasicCachedData extends CachedData {
   private final StampedLock rwLock = new StampedLock();
-  private final Object2IntOpenHashMap<Coordinates> coordsToTimes = new Object2IntOpenHashMap<>();
+  private final CoordToIntMap coordsToTimes = new CoordToIntMap();
 
   @Override
   public Set<Coordinates> nonCached(int ignored, ObjectCollection<Coordinates> coords) {
@@ -44,11 +43,10 @@ public class BasicCachedData extends CachedData {
   }
 
   @Override
-  public Object2IntOpenHashMap<Coordinates> mapToData(
-      int ignored, ObjectCollection<Coordinates> coords) {
+  public CoordToIntMap mapToData(int ignored, ObjectCollection<Coordinates> coords) {
     long read = rwLock.readLock();
     try {
-      val pointToTime = new Object2IntOpenHashMap<Coordinates>(coords.size());
+      val pointToTime = new CoordToIntMap(coords.size());
       coords.forEach(
           coord -> {
             int time = coordsToTimes.getOrDefault(coord, -1);
@@ -65,16 +63,18 @@ public class BasicCachedData extends CachedData {
 
   @Override
   public int get(Coordinates coord) {
-    long read = rwLock.tryOptimisticRead();
-    int time = coordsToTimes.getOrDefault(coord, -1);
-    if (!rwLock.validate(read)) {
-      read = rwLock.readLock();
-      try {
-        time = coordsToTimes.getOrDefault(coord, -1);
-      } finally {
-        rwLock.unlock(read);
-      }
+    long stamp = rwLock.tryOptimisticRead();
+    try {
+      int time = coordsToTimes.getOrDefault(coord, -1);
+      if (rwLock.validate(stamp)) return time;
+    } catch (RuntimeException ignored) {
+      // Concurrent resize of the backing array during optimistic read
     }
-    return time;
+    stamp = rwLock.readLock();
+    try {
+      return coordsToTimes.getOrDefault(coord, -1);
+    } finally {
+      rwLock.unlock(stamp);
+    }
   }
 }

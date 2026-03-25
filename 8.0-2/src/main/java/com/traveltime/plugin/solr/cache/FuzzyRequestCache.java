@@ -17,10 +17,7 @@ public class FuzzyRequestCache extends RequestCache<TravelTimeQueryParameters> {
 
   private final UnadaptedRequestCache<TravelTimeQueryParameters> unadapted =
       new UnadaptedRequestCache<>(
-          this::get,
-          this::put,
-          TravelTimeQueryParameters::fuzzy,
-          () -> new LRUData(args, AdaptedCacheImpl::new));
+          this::get, this::put, TravelTimeQueryParameters::fuzzy, () -> new LRUData(args));
 
   @Override
   public String getDescription() {
