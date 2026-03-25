@@ -78,6 +78,8 @@ class TravelTimeScorer extends Scorer {
 
   @Override
   public float score() throws IOException {
+    if (!docValues.advanceExact(docID())) return 0;
+
     long encodedDocumentCoordinate = docValues.longValue();
     int documentLatitudeBits = (int) (encodedDocumentCoordinate >> 32);
     int documentLongitudeBits = (int) encodedDocumentCoordinate;
@@ -87,7 +89,7 @@ class TravelTimeScorer extends Scorer {
     int travelTime =
         travelTimes == null ? -1 : travelTimes.get(new Coordinates(documentLat, documentLon));
 
-    return docValues.advanceExact(docID()) ? score(travelTime) : 0;
+    return score(travelTime);
   }
 
   @Override
