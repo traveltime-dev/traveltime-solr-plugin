@@ -46,7 +46,7 @@ public final class Util {
 
     if (lat != null && lng != null) {
       GeoUtils.checkLatitude(lat);
-      GeoUtils.checkLongitude(lat);
+      GeoUtils.checkLongitude(lng);
       return new Coordinates(lat, lng);
     } else {
       throw new SolrException(
