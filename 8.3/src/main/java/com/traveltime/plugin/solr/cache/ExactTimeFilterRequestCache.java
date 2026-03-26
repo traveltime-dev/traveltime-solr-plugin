@@ -10,6 +10,11 @@ public class ExactTimeFilterRequestCache extends RequestCache<TimeFilterQueryPar
       new UnadaptedRequestCache<>(this::get, this::put, Function.identity(), BasicCachedData::new);
 
   @Override
+  public String getName() {
+    return getClass().getName();
+  }
+
+  @Override
   public String getDescription() {
     return "TravelTime ExactTimeFilterRequestCache - " + super.getDescription();
   }

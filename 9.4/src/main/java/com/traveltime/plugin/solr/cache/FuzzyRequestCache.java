@@ -20,6 +20,11 @@ public class FuzzyRequestCache extends RequestCache<TravelTimeQueryParameters> {
           this::get, this::put, TravelTimeQueryParameters::fuzzy, () -> new LRUData(args));
 
   @Override
+  public String getName() {
+    return getClass().getName();
+  }
+
+  @Override
   public String getDescription() {
     return String.format(
         "TravelTime FuzzyRequestCache(secondary_size=%s) - %s",
