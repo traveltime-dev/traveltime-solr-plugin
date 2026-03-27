@@ -21,7 +21,7 @@ class PrimitiveLRUCache {
 
   PrimitiveLRUCache(int maxSize) {
     this.maxSize = maxSize;
-    this.map = new Long2IntLinkedOpenHashMap(maxSize);
+    this.map = new Long2IntLinkedOpenHashMap();
     this.map.defaultReturnValue(MISSING);
   }
 
