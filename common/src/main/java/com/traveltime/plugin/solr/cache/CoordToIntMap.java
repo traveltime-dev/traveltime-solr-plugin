@@ -1,6 +1,8 @@
 package com.traveltime.plugin.solr.cache;
 
 import com.traveltime.sdk.dto.common.Coordinates;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 
 /**
@@ -32,5 +34,12 @@ public class CoordToIntMap {
 
   void put(Coordinates coord, int value) {
     map.put(CoordEncoding.encode(coord), value);
+  }
+
+  long ramBytesUsed() {
+    int n = HashCommon.arraySize(map.size(), Hash.DEFAULT_LOAD_FACTOR);
+    int arrayLength = n + 1;
+    // Long2IntOpenHashMap: long[] key + int[] value, each of length n+1
+    return (long) arrayLength * (Long.BYTES + Integer.BYTES);
   }
 }

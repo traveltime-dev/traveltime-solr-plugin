@@ -28,6 +28,11 @@ public class UnprotectedTimes extends CachedData {
   }
 
   @Override
+  public long ramBytesUsed() {
+    return coordsToTimes.ramBytesUsed();
+  }
+
+  @Override
   public int get(Coordinates coord) {
     return -1;
   }

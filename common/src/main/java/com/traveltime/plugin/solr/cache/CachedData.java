@@ -14,4 +14,6 @@ public abstract class CachedData {
   public abstract CoordToIntMap mapToData(int limit, ObjectCollection<Coordinates> coords);
 
   public abstract int get(Coordinates coord);
+
+  public abstract long ramBytesUsed();
 }

@@ -1,6 +1,8 @@
 package com.traveltime.plugin.solr.cache;
 
 import com.traveltime.sdk.dto.common.Coordinates;
+import it.unimi.dsi.fastutil.Hash;
+import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
 
 /**
@@ -19,7 +21,7 @@ class PrimitiveLRUCache {
 
   PrimitiveLRUCache(int maxSize) {
     this.maxSize = maxSize;
-    this.map = new Long2IntLinkedOpenHashMap(maxSize);
+    this.map = new Long2IntLinkedOpenHashMap();
     this.map.defaultReturnValue(MISSING);
   }
 
@@ -34,5 +36,12 @@ class PrimitiveLRUCache {
       map.removeFirstInt();
     }
     map.putAndMoveToLast(encoded, value);
+  }
+
+  long ramBytesUsed() {
+    int n = HashCommon.arraySize(maxSize, Hash.DEFAULT_LOAD_FACTOR);
+    int arrayLength = n + 1;
+    // Long2IntLinkedOpenHashMap: long[] key + int[] value + long[] link, each of length n+1
+    return (long) arrayLength * (Long.BYTES + Integer.BYTES + Long.BYTES);
   }
 }
