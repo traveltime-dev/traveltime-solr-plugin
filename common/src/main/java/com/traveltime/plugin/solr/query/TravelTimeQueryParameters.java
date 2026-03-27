@@ -32,7 +32,7 @@ public class TravelTimeQueryParameters implements QueryParams<TravelTimeQueryPar
 
   @Override
   public String getTransportMode() {
-    return mode == null ? "-" : mode.getValue();
+    return mode == null ? "-" : mode.getType().getValue();
   }
 
   public TravelTimeQueryParameters fuzzy() {
