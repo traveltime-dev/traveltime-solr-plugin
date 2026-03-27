@@ -62,6 +62,11 @@ public class BasicCachedData extends CachedData {
   }
 
   @Override
+  public long ramBytesUsed() {
+    return coordsToTimes.ramBytesUsed();
+  }
+
+  @Override
   public int get(Coordinates coord) {
     long stamp = rwLock.tryOptimisticRead();
     try {

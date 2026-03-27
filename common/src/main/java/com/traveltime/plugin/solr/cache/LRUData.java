@@ -74,6 +74,11 @@ public class LRUData extends CachedData {
   }
 
   @Override
+  public long ramBytesUsed() {
+    return coordsToTimes.ramBytesUsed();
+  }
+
+  @Override
   public int get(Coordinates coord) {
     int time = coordsToTimes.get(coord);
     if (time < 0) return -1;

@@ -7,7 +7,12 @@ import lombok.Getter;
 @Getter
 public class ExactTimeFilterRequestCache extends RequestCache<TimeFilterQueryParameters> {
   private final UnadaptedRequestCache<TimeFilterQueryParameters> unadapted =
-      new UnadaptedRequestCache<>(this::get, this::put, Function.identity(), BasicCachedData::new);
+      new UnadaptedRequestCache<>(
+          this::get,
+          this::put,
+          Function.identity(),
+          BasicCachedData::new,
+          UnadaptedRequestCache.TimesAndDistances::new);
 
   @Override
   public String getDescription() {
