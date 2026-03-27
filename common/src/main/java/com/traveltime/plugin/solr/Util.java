@@ -4,6 +4,7 @@ import com.traveltime.sdk.dto.requests.proto.Country;
 import com.traveltime.sdk.dto.requests.proto.RequestType;
 import com.traveltime.sdk.dto.requests.proto.Transportation;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -26,10 +27,19 @@ public final class Util {
     }
   }
 
+  private static final List<Transportation> ALL_MODES =
+      Arrays.asList(
+          Transportation.Modes.PUBLIC_TRANSPORT,
+          Transportation.Modes.DRIVING_AND_PUBLIC_TRANSPORT,
+          Transportation.Modes.WALKING_FERRY,
+          Transportation.Modes.CYCLING_FERRY,
+          Transportation.Modes.DRIVING_FERRY,
+          Transportation.Modes.WALKING,
+          Transportation.Modes.CYCLING,
+          Transportation.Modes.DRIVING);
+
   public static Optional<Transportation> findModeByName(String name) {
-    return Arrays.stream(Transportation.values())
-        .filter(it -> it.getValue().equals(name))
-        .findFirst();
+    return ALL_MODES.stream().filter(it -> it.getType().getValue().equals(name)).findFirst();
   }
 
   public static Optional<Country> findCountryByName(String name) {
