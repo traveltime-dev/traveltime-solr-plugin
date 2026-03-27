@@ -3,7 +3,6 @@ package com.traveltime.plugin.solr.cache;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.traveltime.sdk.dto.common.Coordinates;
-
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import java.util.ArrayList;

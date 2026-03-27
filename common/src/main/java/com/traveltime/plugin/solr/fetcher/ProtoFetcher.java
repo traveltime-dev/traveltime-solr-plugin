@@ -64,7 +64,8 @@ public class ProtoFetcher implements Fetcher<TravelTimeQueryParameters> {
     return result.fold(
         err -> {
           logError(err);
-          throw new RuntimeException("Error when fetching data from the TravelTime API: " + err.getMessage());
+          throw new RuntimeException(
+              "Error when fetching data from the TravelTime API: " + err.getMessage());
         },
         resp -> Response.of(resp.getTravelTimes(), resp.getDistances()));
   }

@@ -1,7 +1,7 @@
 package com.traveltime.plugin.solr.query;
 
-import com.traveltime.plugin.solr.cache.RequestCache;
 import com.traveltime.plugin.solr.cache.CoordToIntMap;
+import com.traveltime.plugin.solr.cache.RequestCache;
 import com.traveltime.plugin.solr.cache.UnadaptedRequestCache;
 import com.traveltime.plugin.solr.cache.UnprotectedTimes;
 import com.traveltime.plugin.solr.fetcher.Fetcher;
@@ -10,7 +10,6 @@ import com.traveltime.sdk.dto.common.Coordinates;
 import it.unimi.dsi.fastutil.ints.Int2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-
 import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import java.io.IOException;
 import lombok.val;
